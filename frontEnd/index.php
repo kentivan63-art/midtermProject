@@ -20,6 +20,15 @@
     } else {
         echo "<p style='color:green;'>Database connected successfully!</p>";
     }
+
+    if (isset($_POST['user_name'])) {
+    $user = $_POST['user_name'];
+    $sql = "INSERT INTO users (username) VALUES ('$user')";
+    
+    if ($conn->query($sql) === TRUE) {
+        echo "<p style='color:blue;'>Saved: " . $user . "</p>";
+    }
+}
     ?>
 
     <form action="insert.php" method="POST">

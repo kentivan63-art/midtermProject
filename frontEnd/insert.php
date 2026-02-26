@@ -3,7 +3,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "simple_web"; // This matches your phpMyAdmin screenshot
+$dbname = "midtermProject"; // This matches your phpMyAdmin screenshot
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

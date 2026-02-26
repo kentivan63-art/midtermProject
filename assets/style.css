@@ -43,12 +43,11 @@ html, body {
     line-height: 1.6;
 }
 
-.cta {
+.cta-button {
     font-family: 'Google Sans', sans-serif;
     font-size: 17px;
     font-weight: 200;
     color: rgba(255, 255, 255, 0.8);
-
     margin-top: 20px;
     max-width: 500px;
     line-height: 1.6;

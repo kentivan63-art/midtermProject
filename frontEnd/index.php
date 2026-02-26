@@ -1,39 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>My PHP Website</title>
+    <title>Groovify</title>
+    <link rel="stylesheet" href="../assets/style.css">
+    <link rel="icon" type="image/x-icon" href="../groovifylogo.ico?v=1">
 </head>
 <body>
-    <h1>Welcome to My Site</h1>
+
+  <nav class="navbar">
+    <img id="logo" src="../groovifytextlogo.png" alt="GroovifyText Logo">
+    <ul class="nav-links">
+        <li><a href="index.php">Home</a></li>
+        <li><a href="about.php">About</a></li>
+        <li><a href="signup.php">Sign Up</a></li>
+        <li><a href="index.php">Log in</a></li>
+    </ul>
+</nav>
+
+<div class="hero-section">
+    <img src="../homepage.jpg" alt="Homepage Image" class="hero-image">
+
+    <div class="hero-text">
+        <div class="tagline">
+            Feel the Beat.<br>Live the Groove.
+        </div>
+
+        <p class="subheading">
+            Stream unlimited music. Discover new artists. Experience sound like never before.
+        </p>
+
+        <div class="cta">
+            <a href="signup.php" class="cta-button">Get Started</a>
+        </div>
+    </div>
+</div>
 
     <?php
-    // You can write PHP right here in the middle of your HTML!
+    error_reporting(E_ALL);
+    ini_set('display_errors', 0);
+
     $servername = "localhost";
     $username = "root";
     $password = "";
-    $dbname = "simple_web";
+    $dbname = "midtermProject";
 
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-    if ($conn->connect_error) {
-        echo "<p style='color:red;'>Database offline.</p>";
-    } else {
-        echo "<p style='color:green;'>Database connected successfully!</p>";
+    try {
+        $conn = new mysqli($servername, $username, $password, $dbname);
+        $conn->set_charset("utf8mb4");
+
+        if (isset($_POST['user_name']) && !empty(trim($_POST['user_name']))) {
+            $user = trim($_POST['user_name']);
+
+            $stmt = $conn->prepare("INSERT INTO users (username) VALUES (?)");
+            $stmt->bind_param("s", $user);
+
+            if ($stmt->execute()) {
+                echo "<p style='color:blue;'>Saved: " . htmlspecialchars($user) . "</p>";
+            } else {
+                echo "<p style='color:red;'>Error saving user.</p>";
+            }
+
+            $stmt->close();
+        }
+
+        $conn->close();
+
+    } catch (mysqli_sql_exception $e) {
+        echo "<p style='color:red;'>Database connection failed.</p>";
     }
-
-    if (isset($_POST['user_name'])) {
-    $user = $_POST['user_name'];
-    $sql = "INSERT INTO users (username) VALUES ('$user')";
-    
-    if ($conn->query($sql) === TRUE) {
-        echo "<p style='color:blue;'>Saved: " . $user . "</p>";
-    }
-}
     ?>
-
-    <form action="insert.php" method="POST">
-        <input type="text" name="user_name" placeholder="Enter Name">
-        <button type="submit">Submit</button>
-    </form>
 </body>
+
 </html>

@@ -2,18 +2,17 @@
 <html>
 <head>
     <title>Groovify</title>
-    <link rel="stylesheet" href="../assets/style.css">
-    <link rel="icon" type="image/x-icon" href="../groovifylogo.ico?v=1">
+    <link rel="stylesheet" href="/midtermProject/assets/style.css?v=999">
+    <link rel="icon" type="image/x-icon" href="../groovifylogo.ico?v=2">
 </head>
 <body>
 
-  <nav class="navbar">
+    <nav class="navbar">
     <img id="logo" src="../groovifytextlogo.png" alt="GroovifyText Logo">
     <ul class="nav-links">
         <li><a href="index.php">Home</a></li>
         <li><a href="about.php">About</a></li>
-        <li><a href="signup.php">Sign Up</a></li>
-        <li><a href="index.php">Log in</a></li>
+        <li><a href="login.php">Log in</a></li>
     </ul>
 </nav>
 
@@ -30,7 +29,7 @@
         </p>
 
         <div class="cta">
-            <a href="signup.php" class="cta-button">Get Started</a>
+            <a href="signup.php" class="cta-button">Sign up now</a>
         </div>
     </div>
 </div>

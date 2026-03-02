@@ -8,11 +8,9 @@
 }
 
 html, body {
-    height: 100vh;
+    min-height: 100vh;
     font-family: 'Google Sans', sans-serif;
-    overflow: hidden;
 }
-
 
 /* BACKGROUND IMAGE */
 .hero-image {
@@ -33,6 +31,16 @@ body::after {
     z-index: -1;
 }   
 
+.login-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1;
+}
+
 .login-card {
     position: relative;
     z-index: 2;
@@ -42,7 +50,6 @@ body::after {
     border-radius: 20px;
     width: 100%;
     max-width: 420px;
-    min-height: 500px; /* 👈 set same height manually */
     text-align: center;
     animation: fadeIn 0.6s ease forwards;
 }

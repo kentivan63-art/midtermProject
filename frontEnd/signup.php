@@ -17,7 +17,17 @@
     <p class="login-subtext">Sign up to explore unlimited music and curated playlists.</p>
 
     <div class="input-group">
+             <label>Full Name</label>
+            <input type="text" name="fullname" required>
+        </div>
+
+        <div class="input-group">
             <label>Email</label>
+            <input type="email" name="email" required>
+        </div>
+
+         <div class="input-group">
+            <label>Password</label>
             <input type="email" name="email" required>
         </div>
 

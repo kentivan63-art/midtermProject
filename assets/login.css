@@ -8,9 +8,11 @@
 }
 
 html, body {
-    height: 100vh;
+    min-height: 100vh;
     font-family: 'Google Sans', sans-serif;
-    overflow: hidden;
+    /* force scrolling whenever content is taller than viewport */
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
 }
 
 /* BACKGROUND IMAGE */
@@ -26,10 +28,47 @@ html, body {
 
 /* LOGO ABOVE TITLE */
 .logo-image {
-    width: 80px;
-    height: 80px;
+    width: 60px;            /* smaller for login page */
+    height: 60px;
     display: block;
     margin: 0 auto 18px auto; /* centered + spacing */
+}
+
+/* NAVIGATION (copied from style.css, for pages that only load login.css) */
+.navbar {
+    padding: 8px 20px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.nav-links {
+    font-family: 'Google Sans', sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    list-style: none;
+    display: flex;
+    gap: 30px;
+    margin: 0;
+    padding: 0 40px;
+    height: 100%;
+    align-items: center;
+}
+
+.nav-links li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+.nav-links li a:hover {
+    color: #1db954;
 }
 
 /* DARK OVERLAY */

@@ -29,8 +29,8 @@ if (!isset($_SESSION["user_id"])) {
     </div>
 
     <nav class="nav">
-  <a class="nav-item active" href="#"><span class="ico"></span> Home</a>
-  <a class="nav-item" href="#"><span class="ico"></span> Library</a>
+  <a class="nav-item active" href="dashboard.php"><span class="ico"></span> Home</a>
+  <a class="nav-item" href="library.php"><span class="ico"></span> Library</a>
   <a class="nav-item" href="logout_process.php"><span class="ico"></span> Log out</a>
 </nav>
 

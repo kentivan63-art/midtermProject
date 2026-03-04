@@ -8,7 +8,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = $_POST["password"] ?? "";
 
     if (!$email || !$password) {
-        die("Missing fields.");
+        // redirect back with missing-field indicator
+        header("Location: login.php?error=missing");
+        exit;
     }
 
     // Find user
@@ -31,6 +33,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
-    echo "Invalid email or password.";
+    // credentials didn't match
+    header("Location: login.php?error=invalid");
+    exit;
 }
 ?>

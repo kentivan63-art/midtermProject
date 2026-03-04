@@ -9,6 +9,31 @@ $dbname = "midtermProject"; // make sure this matches your database name
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
+// create the songs table if it doesn't exist yet
+$conn->query("CREATE TABLE IF NOT EXISTS songs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    artist VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL
+)");
+
+// if the table is empty, try populating from the provided SQL file
+$res = $conn->query("SELECT COUNT(*) FROM songs");
+$count = $res->fetch_row()[0] ?? 0;
+if ($count == 0) {
+    $sqlPath = __DIR__ . '/../assets/audio/songs_insert.sql';
+    if (file_exists($sqlPath)) {
+        $sql = file_get_contents($sqlPath);
+        if ($sql) {
+            $conn->multi_query($sql);
+            // consume any additional results to clear the connection
+            while ($conn->more_results() && $conn->next_result()) {
+                // do nothing
+            }
+        }
+    }
+}
+
 if ($conn->connect_error) {
     http_response_code(500);
     echo json_encode([

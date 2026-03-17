@@ -51,10 +51,13 @@ function playAtIndex(i) {
   player.play().catch(() => {});
 
   fetch("/midtermProject/frontEnd/track_listen.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "songID=" + track.id
-  });
+  method: "POST",
+  headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  body: "songID=" + encodeURIComponent(track.id)
+})
+.then(res => res.json())
+.then(data => console.log("track_listen:", data))
+.catch(err => console.error("track_listen error:", err));
 
   if (npTitle) npTitle.textContent = track.title;
   if (npArtist) npArtist.textContent = track.artist;

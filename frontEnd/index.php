@@ -67,7 +67,7 @@
         $conn->close();
 
     } catch (mysqli_sql_exception $e) {
-        echo "<p style='color:red;'>Database connection failed.</p>";
+        exit;
     }
     ?>
 </body>

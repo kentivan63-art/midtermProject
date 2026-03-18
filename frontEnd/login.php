@@ -70,6 +70,10 @@ if (isset($_SESSION['user_id'])) {
                     <input type="password" name="password" required>
                 </div>
 
+                <p class="forgot-link">
+            <a href="forgot_password.php">Forgot Password?</a>
+            </p>
+
                 <button type="submit" class="login-btn">Log In</button>
             </form>
 

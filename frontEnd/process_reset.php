@@ -15,12 +15,12 @@ if ($result->num_rows == 0) {
 
 $user = $result->fetch_assoc();
 
-// check expiry
+// CHECK EXPIRY
 if (strtotime($user['token_expiry']) < time()) {
     die("Code expired.");
 }
 
-// update password
+// UPDATE PASSWORD
 $newPass = password_hash($password, PASSWORD_DEFAULT);
 
 $update = $conn->prepare("UPDATE users SET password=?, reset_token=NULL, token_expiry=NULL WHERE id=?");

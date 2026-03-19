@@ -17,7 +17,7 @@ $conn->query("CREATE TABLE IF NOT EXISTS songs (
     file_path VARCHAR(500) NOT NULL
 )");
 
-// if the table is empty, try populating from the provided SQL file
+// IF THE TABLE IS EMPTY, INSERT SOME SAMPLE SONGS
 $res = $conn->query("SELECT COUNT(*) FROM songs");
 $count = $res->fetch_row()[0] ?? 0;
 if ($count == 0) {

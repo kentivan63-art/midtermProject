@@ -1,21 +1,25 @@
 <?php
 
-// ✅ 1. TOP OF FILE (IMPORTS — MUST BE FIRST)
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// ✅ 2. REQUIRE FILES (RIGHT AFTER USE)
-require '../PHPMailer/src/Exception.php';
-require '../PHPMailer/src/PHPMailer.php';
-require '../PHPMailer/src/SMTP.php';
+require __DIR__ . '/../PHPMailer/src/Exception.php';
+require __DIR__ . '/../PHPMailer/src/PHPMailer.php';
+require __DIR__ . '/../PHPMailer/src/SMTP.php';
 
-// ✅ 3. DATABASE CONNECTION
 include("../config/db.php");
 
-// ✅ 4. GET EMAIL FROM FORM
-$email = $_POST['email'];
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    die("Invalid request.");
+}
 
-// check if email exists
+$email = trim($_POST['email'] ?? '');
+
+if (!$email) {
+    die("Email is required.");
+}
+
+// CHECK IF EMAIL EXISTS
 $stmt = $conn->prepare("SELECT id FROM users WHERE email=?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
@@ -25,51 +29,50 @@ if ($result->num_rows == 0) {
     die("Email not found.");
 }
 
-// ✅ 5. GENERATE CODE
+// GENERATE A RANDOM 6-DIGIT TOKEN AND SET EXPIRY TIME
 $token = rand(100000, 999999);
 $expiry = date("Y-m-d H:i:s", strtotime("+10 minutes"));
 
-// save to database
+// SAVE DATA TO DATABASE
 $update = $conn->prepare("UPDATE users SET reset_token=?, token_expiry=? WHERE email=?");
 $update->bind_param("sss", $token, $expiry, $email);
 $update->execute();
 
-// ✅ 6. CREATE MAIL OBJECT (PUT HERE)
 $mail = new PHPMailer(true);
 
-// ✅ 7. DEBUG MODE (PUT RIGHT AFTER MAIL OBJECT)
-//$mail->SMTPDebug = 2;
-
 try {
-
-    // ✅ 8. SMTP SETTINGS (PUT INSIDE TRY)
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'alixsupangan2122324@gmail.com'; // ✅ YOUR GMAIL
-$mail->Password = 'cencywncnaffwpsc';           // ✅ APP PASSWORD (NO SPACES)
+    $mail->Username = 'hajings18@gmail.com';
+    $mail->Password = 'PUT_YOUR_NEW_APP_PASSWORD_HERE';
 
-    
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+    $mail->Port = 465;
 
-    $mail->SMTPSecure = 'tls';
-    $mail->Port = 587;
+    $mail->SMTPOptions = [
+        'ssl' => [
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+            'allow_self_signed' => true,
+        ],
+    ];
 
-    // ✅ 9. EMAIL CONTENT
-    $mail->setFrom('yourgmail@gmail.com', 'Groovify');
+    $mail->SMTPDebug = 2;
+    $mail->Debugoutput = 'html';
+
+    $mail->setFrom('hajings18@gmail.com', 'Groovify');
     $mail->addAddress($email);
 
     $mail->isHTML(true);
     $mail->Subject = 'Password Reset Code';
     $mail->Body = "Your reset code is: <b>$token</b>";
+    $mail->AltBody = "Your reset code is: $token";
 
-    // ✅ 10. SEND EMAIL
     $mail->send();
 
     echo "Code sent to your email!";
     echo "<br><a href='reset_password.php'>Reset Password</a>";
-
 } catch (Exception $e) {
-
-    // ✅ 11. ERROR OUTPUT
     echo "Mailer Error: " . $mail->ErrorInfo;
 }

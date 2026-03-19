@@ -27,14 +27,14 @@ if (isset($_SESSION['user_id'])) {
     </ul>
 </nav>
 
-    <!-- Background -->
+    <!-- BACKGROUND IMAGE -->
     <img src="../homepage.jpg" alt="Homepage Image" class="hero-image">
 
-    <!-- Center Container -->
+    <!-- CENTER CONTAINER -->
     <div class="login-container">
         <div class="login-card">
 
-            <!-- Logo Above Title -->
+            <!-- LOGO ABOVE TITLE -->
             <img src="../logotransparent.png" alt="Groovify Logo" class="logo-image">
 
             <h1>Welcome Back</h1>

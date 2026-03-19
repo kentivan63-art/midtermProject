@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once("../config/db.php"); // make sure path is correct
+require_once("../config/db.php");
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -8,13 +8,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $password = $_POST["password"] ?? "";
 
     if (!$email || !$password) {
-        // redirect back with missing-field indicator
         header("Location: login.php?error=missing");
         exit;
     }
 
-    // Find user
-    $stmt = $conn->prepare("SELECT id, password FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id, full_name, password FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -22,18 +20,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
-        // If you're using password_hash()
         if (password_verify($password, $user["password"])) {
-
             $_SESSION["user_id"] = $user["id"];
-            $_SESSION["email"] = $email;
+            $_SESSION["full_name"] = $user["full_name"];
 
-            header("Location: dashboard.php");
+            header("Location: dashboard.php?login=success");
             exit;
         }
     }
 
-    // credentials didn't match
     header("Location: login.php?error=invalid");
     exit;
 }

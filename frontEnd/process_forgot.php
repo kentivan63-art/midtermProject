@@ -1,4 +1,6 @@
 <?php
+session_start();
+require_once("../config/db.php");
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -7,46 +9,52 @@ require __DIR__ . '/../PHPMailer/src/Exception.php';
 require __DIR__ . '/../PHPMailer/src/PHPMailer.php';
 require __DIR__ . '/../PHPMailer/src/SMTP.php';
 
-include("../config/db.php");
-
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    die("Invalid request.");
+    $_SESSION['forgot_error'] = "Invalid request.";
+    header("Location: forgot_password.php");
+    exit;
 }
 
 $email = trim($_POST['email'] ?? '');
-
 if (!$email) {
-    die("Email is required.");
+    $_SESSION['forgot_error'] = "Please enter your email.";
+    header("Location: forgot_password.php");
+    exit;
 }
 
-// CHECK IF EMAIL EXISTS
+// Check if email exists
 $stmt = $conn->prepare("SELECT id FROM users WHERE email=?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
 
-if ($result->num_rows == 0) {
-    die("Email not found.");
+if ($result->num_rows === 0) {
+    $_SESSION['forgot_error'] = "Email not found.";
+    header("Location: forgot_password.php");
+    exit;
 }
 
-// GENERATE A RANDOM 6-DIGIT TOKEN AND SET EXPIRY TIME
+// Generate 6-digit code
 $token = rand(100000, 999999);
 $expiry = date("Y-m-d H:i:s", strtotime("+10 minutes"));
 
-// SAVE DATA TO DATABASE
+// Save token to database
 $update = $conn->prepare("UPDATE users SET reset_token=?, token_expiry=? WHERE email=?");
 $update->bind_param("sss", $token, $expiry, $email);
 $update->execute();
 
+// Send email via PHPMailer
 $mail = new PHPMailer(true);
 
 try {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'hajings18@gmail.com';
-    $mail->Password = 'PUT_YOUR_NEW_APP_PASSWORD_HERE';
 
+    // ⚠️ Replace these with your Gmail + App Password
+    $mail->Username = 'alixsupangan2122324@gmail.com';
+    $mail->Password = 'unlvjtubynjaffkr';
+    
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
     $mail->Port = 465;
 
@@ -58,21 +66,30 @@ try {
         ],
     ];
 
-    $mail->SMTPDebug = 2;
-    $mail->Debugoutput = 'html';
-
-    $mail->setFrom('hajings18@gmail.com', 'Groovify');
+    $mail->setFrom($mail->Username, 'Groovify');
     $mail->addAddress($email);
 
     $mail->isHTML(true);
-    $mail->Subject = 'Password Reset Code';
-    $mail->Body = "Your reset code is: <b>$token</b>";
-    $mail->AltBody = "Your reset code is: $token";
+    $mail->Subject = 'Groovify Password Reset Code';
+    $mail->Body = "
+        <h2>Groovify Password Reset</h2>
+        <p>Your reset code is: <b>$token</b></p>
+        <p>Use this code on the reset password page to update your password.</p>
+        <a href='../frontEnd/reset_password.php' style='display:inline-block; padding:10px 20px; background:#1db954; color:#fff; text-decoration:none; border-radius:5px;'>Reset Password</a>
+    ";
+    $mail->AltBody = "Your reset code is: $token\nVisit reset_password.php to reset your password.";
 
     $mail->send();
 
-    echo "Code sent to your email!";
-    echo "<br><a href='reset_password.php'>Reset Password</a>";
+    // Save the email in session so reset_password.php knows which account
+$_SESSION['reset_email'] = $email;
+
+// Redirect user to reset_password.php
+header("Location: reset_password.php");
+exit;
+
 } catch (Exception $e) {
-    echo "Mailer Error: " . $mail->ErrorInfo;
+    $_SESSION['forgot_error'] = "Could not send email. Please check your Gmail App Password or try again.";
+    header("Location: forgot_password.php");
+    exit;
 }

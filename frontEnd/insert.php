@@ -1,26 +1,24 @@
 <?php
-// 1. Establish the connection to your XAMPP MySQL
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "midtermProject"; // This matches your phpMyAdmin screenshot
+$dbname = "midtermProject";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// 2. Check if the connection works
+// CHECK IF CONNECTION WAS SUCCESSFUL
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// 3. Capture the data from the form
+// CHECK IF THE FORM WAS SUBMITTED
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user = $_POST['user_name']; // Matches the 'name' attribute in your HTML input
-    
-    // Since your table 'users' requires an email (based on your SQL error screenshot)
-    // we will set a placeholder or you can add an email field to your form.
+    $user = $_POST['user_name']; // MATCHES THE NAME ATTRIBUTE IN YOUR FORM INPUT
+
+    // WE WILL USE A FIXED EMAIL FOR DEMONSTRATION PURPOSES, AS THE FORM ONLY HAS A USERNAME FIELD
     $email = "user@example.com"; 
 
-    // 4. Prepare the SQL command
+    // PREPARE THE SQL COMMAND
     $sql = "INSERT INTO users (username, email) VALUES ('$user', '$email')";
 
     if ($conn->query($sql) === TRUE) {

@@ -10,7 +10,7 @@ if (!isset($_SESSION["user_id"])) {
 $userID = $_SESSION["user_id"];
 $playlistID = $_GET["id"] ?? 0;
 
-// Get playlist info
+// GET PLAYLIST INFO
 $stmt = $conn->prepare("SELECT id, name FROM playlists WHERE id = ? AND userID = ?");
 $stmt->bind_param("ii", $playlistID, $userID);
 $stmt->execute();
@@ -23,7 +23,7 @@ if ($playlistResult->num_rows === 0) {
 
 $playlist = $playlistResult->fetch_assoc();
 
-// Get songs in playlist
+// GET SONGS IN PLAYLIST
 $stmtSongs = $conn->prepare("
     SELECT songs.id, songs.title, songs.artist, songs.file_path
     FROM playlist_songs

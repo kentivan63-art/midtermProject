@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-// Unset all session variables
+// CLEAR ALL SESSION VARIABLES
 $_SESSION = [];
 
-// Destroy the session
+// DESTROY THE SESSION
 session_destroy();
 
-// Optional: delete session cookie (extra clean)
+// Optional: DELETE THE SESSION COOKIE
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(
@@ -21,6 +21,6 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Redirect to login page
+// REDIRECT TO HOMEPAGE OR LOGIN PAGE
 header("Location: index.php");
 exit;

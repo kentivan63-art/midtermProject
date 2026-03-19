@@ -15,13 +15,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         die("Invalid email address.");
     }
 
-    // check for existing account
+    // CHECK IF EMAIL ALREADY EXISTS
     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
     if ($stmt->num_rows > 0) {
-        // redirect back to login with error flag
+        // REDIRECT BACK WITH ERROR
         header("Location: login.php?error=exists");
         exit;
     }

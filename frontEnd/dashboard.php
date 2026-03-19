@@ -86,7 +86,7 @@ while ($row = $playlistResult->fetch_assoc()) {
           <div class="col-action">Play</div>
         </div>
 
-        <!-- JS injects rows here -->
+        <!-- JS INJECT ROWS -->
         <div id="jamendoResults"></div>
       </div>
     </section>

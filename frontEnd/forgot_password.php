@@ -1,13 +1,14 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Forgot Password - Groovify</title>
     <link rel="stylesheet" href="/midtermProject/assets/style.css?v=1000">
     <link rel="stylesheet" href="/midtermProject/assets/forgot_password.css?v=6">
     <link rel="icon" type="image/x-icon" href="../groovifylogo.ico?v=2">
 </head>
 <body>
-<?php session_start(); ?>
 
 <nav class="navbar">
     <img id="logo" src="../groovifytextlogo.png" alt="GroovifyText Logo">
@@ -25,8 +26,7 @@
 <img src="../homepage.jpg" alt="Homepage Image" class="hero-image">
 
 <div class="forgot-page">
-    <div class="forgot-brand">
-    </div>
+    <div class="forgot-brand"></div>
 
     <div class="forgot-container">
         <div class="forgot-card">
@@ -34,6 +34,18 @@
 
             <h2>Forgot Password</h2>
             <p class="forgot-subtext">Enter your email and we’ll send you a reset code.</p>
+
+            <!-- Display session messages -->
+            <?php
+            if (isset($_SESSION['forgot_error'])) {
+                echo "<p style='color:red; text-align:center;'>{$_SESSION['forgot_error']}</p>";
+                unset($_SESSION['forgot_error']);
+            }
+            if (isset($_SESSION['forgot_success'])) {
+                echo "<p style='color:green; text-align:center;'>{$_SESSION['forgot_success']}</p>";
+                unset($_SESSION['forgot_success']);
+            }
+            ?>
 
             <form action="process_forgot.php" method="POST">
                 <div class="input-group">
@@ -45,8 +57,7 @@
             </form>
 
             <p class="back-link">
-                Remember your password?
-                <a href="login.php">Log in</a>
+                Remember your password? <a href="login.php">Log in</a>
             </p>
         </div>
     </div>

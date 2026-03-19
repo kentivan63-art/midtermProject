@@ -7,21 +7,6 @@ if (!isset($_SESSION["user_id"])) {
 }
 ?>
 
-<?php
-require_once("../config/db.php");
-
-$userID = $_SESSION["user_id"];
-$stmt = $conn->prepare("SELECT id, name FROM playlists WHERE userID = ? ORDER BY created_at DESC");
-$stmt->bind_param("i", $userID);
-$stmt->execute();
-$playlistResult = $stmt->get_result();
-
-$userPlaylists = [];
-while ($row = $playlistResult->fetch_assoc()) {
-    $userPlaylists[] = $row;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,7 +31,6 @@ while ($row = $playlistResult->fetch_assoc()) {
     <nav class="nav">
   <a class="nav-item active" href="dashboard.php"><span class="ico"></span> Home</a>
   <a class="nav-item" href="library.php"><span class="ico"></span> Library</a>
-  <a class="nav-item" href="recently_played.php"><span class="ico"></span> Recently Played</a>
   <a class="nav-item" href="logout_process.php"><span class="ico"></span> Log out</a>
 </nav>
 
@@ -86,7 +70,7 @@ while ($row = $playlistResult->fetch_assoc()) {
           <div class="col-action">Play</div>
         </div>
 
-        <!-- JS INJECT ROWS -->
+        <!-- JS injects rows here -->
         <div id="jamendoResults"></div>
       </div>
     </section>
@@ -105,7 +89,7 @@ while ($row = $playlistResult->fetch_assoc()) {
     </div>
 
     <div class="controls">
-      <button class="icon" id="btnPlayPause" type="button">▶</button>
+      <button class="icon" id="btnPlayPause" type="button">⏯</button>
 
       <div class="time">
         <span id="curTime">0:00</span>

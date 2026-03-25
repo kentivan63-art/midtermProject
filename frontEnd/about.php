@@ -2,13 +2,15 @@
 <html>
 <head>
     <title>Groovify</title>
-    <link rel="stylesheet" href="/midtermProject/assets/style.css?v=999">
+    <link rel="stylesheet" href="/midtermProject/assets/about.css?v=999">
     <link rel="icon" type="image/x-icon" href="../groovifylogo.ico?v=2">
 </head>
 <body>
 
     <nav class="navbar">
+    <a href="index.php">
     <img id="logo" src="../groovifytextlogo.png" alt="GroovifyText Logo">
+</a>
     <ul class="nav-links">
         <li><a href="index.php">Home</a></li>
         <li><a href="about.php">About</a></li>
@@ -21,20 +23,25 @@
 
     <div class="hero-text">
         <div class="tagline">
-            Feel the Beat.<br>Live the Groove.
+            What is Groovify?
         </div>
 
         <p class="subheading">
-            Stream unlimited music. Discover new artists. Experience sound like never before.
+            Groovify is a modern, user-friendly music streaming web application that allows users to explore, play, and manage their favorite songs seamlessly through a clean and responsive interface.
         </p>
 
-        <div class="cta">
-            <a href="signup.php" class="cta-button">Sign up now</a>
-        </div>
-    </div>
+        <div class="credits-box">
+    <h3>Credits</h3>
+    <ul>
+        <li><span>Xyril Xian Ogario</span> – Project Manager / Front-End Developer</li>
+        <li><span>Kent Ivan Lubas</span> – Database / Back-End Developer</li>
+        <li><span>Jahred Inguito</span> – UI/UX Designer / Front-End Developer</li>
+        <li><span>Edgil Manjac</span> – Backend Developer</li>
+        <li><span>Alix Supangan</span> – Backend Developer</li>
+        <li><span>Mary Antoinette Quiros</span> – Documentation</li>
+    </ul>
 </div>
-
-        <footer></footer>
+</div>
 
     <?php
     error_reporting(E_ALL);

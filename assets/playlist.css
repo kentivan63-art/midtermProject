@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap');
+
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #0b0b0b;
+    color: white;
+    font-family: 'Google Sans', sans-serif;
+}
+
+/* TITLE */
+h1 {
+    font-size: 30px;
+    font-weight: 800;
+    margin: 30px 40px 20px;
+}
+
+/* PLAYLIST CONTAINER */
+.playlist-container {
+    margin: 0 40px;
+    border-radius: 14px;
+    overflow: hidden;
+
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* HEADER ROW */
+.playlist-header {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr;
+    padding: 14px 18px;
+
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* SONG ROW */
+.playlist-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr;
+    padding: 14px 18px;
+
+    font-size: 15px;
+    color: #ccc;
+
+    transition: 0.2s ease;
+}
+
+/* HOVER EFFECT */
+.playlist-row:hover {
+    background: rgba(255,255,255,0.06);
+    color: white;
+}
+
+/* NUMBER COLUMN */
+.col-num {
+    opacity: 0.6;
+}
+
+/* TRACK NAME */
+.col-title {
+    font-weight: 600;
+}
+
+/* ARTIST */
+.col-artist {
+    opacity: 0.7;
+}
+
+/* EMPTY TEXT */
+.empty {
+    margin: 20px 40px;
+    color: rgba(255,255,255,0.6);
+}

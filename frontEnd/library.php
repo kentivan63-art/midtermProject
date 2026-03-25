@@ -37,6 +37,7 @@ $result = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Library - Groovify</title>
     <link rel="stylesheet" href="../assets/dashboard.css?v=3">
+    <link rel="stylesheet" href="../assets/library.css?v=3">
     <link rel="icon" type="image/x-icon" href="../groovifylogo.ico">
 </head>
 <body>
@@ -121,7 +122,11 @@ $result = $stmt->get_result();
                     <?php while ($row = $result->fetch_assoc()): ?>
                         <div class="row item">
                             <div class="col-num"><?php echo $count++; ?></div>
-                            <div class="col-track"><?php echo htmlspecialchars($row["name"]); ?></div>
+                            <div class="col-track">
+                            <a href="playlist.php?id=<?php echo $row['id']; ?>" class="playlist-link">
+                            <?php echo htmlspecialchars($row["name"]); ?>
+                            </a>
+                            </div>
                             <div class="col-artist"><?php echo htmlspecialchars($row["created_at"]); ?></div>
                             <div class="col-action"></div>
                         </div>

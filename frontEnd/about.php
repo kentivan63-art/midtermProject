@@ -36,8 +36,8 @@
         <li><span>Xyril Xian Ogario</span> – Project Manager / Front-End Developer</li>
         <li><span>Kent Ivan Lubas</span> – Database / Back-End Developer</li>
         <li><span>Jahred Inguito</span> – UI/UX Designer / Front-End Developer</li>
-        <li><span>Edgil Manjac</span> – Backend Developer</li>
-        <li><span>Alix Supangan</span> – Backend Developer</li>
+        <li><span>Edgil Manjac</span> – Backend Developer / Tester</li>
+        <li><span>Alix Supangan</span> – Backend Developer / Front-End Developer / Tester</li>
         <li><span>Mary Antoinette Quiros</span> – Documentation</li>
     </ul>
 </div>

@@ -1,10 +1,9 @@
 Run this on the console myphpadmin
 
-
 -- 1. Create users table
 CREATE TABLE IF NOT EXISTS users (
     id INT(11) NOT NULL AUTO_INCREMENT,
-    fullname VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
+    full_name VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
     username VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
     email VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
     password VARCHAR(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -32,7 +31,8 @@ CREATE TABLE IF NOT EXISTS listeninghistory (
     INDEX idx_songID (songID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---4. CREATE TABLE IF NOT EXISTS playlists (
+-- 4. Create playlists table
+CREATE TABLE IF NOT EXISTS playlists (
     playlistID INT AUTO_INCREMENT PRIMARY KEY,  
     userID INT NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -42,12 +42,13 @@ CREATE TABLE IF NOT EXISTS listeninghistory (
     INDEX idx_userID (userID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---5. CREATE TABLE IF NOT EXISTS playlist_songs (
-    playlist_id INT AUTO_INCREMENT PRIMARY KEY,
+-- 5. Create playlist_songs table
+CREATE TABLE IF NOT EXISTS playlist_songs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     playlistID INT NOT NULL,
-    song_id INT NOT NULL,
+    songID INT NOT NULL,
     added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (playlistID) REFERENCES playlists(id) ON DELETE CASCADE,
+    FOREIGN KEY (playlistID) REFERENCES playlists(playlistID) ON DELETE CASCADE,
     FOREIGN KEY (songID) REFERENCES songs(id) ON DELETE CASCADE,
     INDEX idx_playlistID (playlistID),
     INDEX idx_songID (songID),

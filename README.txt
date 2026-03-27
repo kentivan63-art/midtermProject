@@ -42,15 +42,28 @@ CREATE TABLE IF NOT EXISTS playlists (
     INDEX idx_userID (userID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-<<<<<<< HEAD
---5. CREATE TABLE IF NOT EXISTS playlists (
-    playlist_id INT AUTO_INCREMENT PRIMARY KEY,  
-    userID INT NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    description VARCHAR(500),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userID) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_userID (userID)
+-- 5. Create playlist_songs table
+CREATE TABLE IF NOT EXISTS playlist_songs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    playlistID INT NOT NULL,
+    songID INT NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (playlistID) REFERENCES playlists(playlistID) ON DELETE CASCADE,
+    FOREIGN KEY (songID) REFERENCES songs(id) ON DELETE CASCADE,
+    INDEX idx_playlistID (playlistID),
+    INDEX idx_songID (songID),
+    UNIQUE KEY unique_playlist_song (playlistID, songID)
+>>>>>>> 396aca0ea2a4b5a5668b04d48d6503c48b6c912e
+=======
+-- 5. Create playlist_songs table
+CREATE TABLE IF NOT EXISTS playlist_songs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    playlistID INT NOT NULL,
+    songID INT NOT NULL,
+    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (playlistID) REFERENCES playlists(playlistID) ON DELETE CASCADE,
+    FOREIGN KEY (songID) REFERENCES songs(id) ON DELETE CASCADE,
+    INDEX idx_playlistID (playlistID),
 =======
 -- 5. Create playlist_songs table
 CREATE TABLE IF NOT EXISTS playlist_songs (

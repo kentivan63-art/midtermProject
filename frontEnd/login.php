@@ -27,20 +27,32 @@ if (isset($_SESSION['user_id'])) {
     </ul>
 </nav>
 
-    <!-- BACKGROUND IMAGE -->
-    <img src="../homepage.jpg" alt="Homepage Image" class="hero-image">
+<!-- BACKGROUND IMAGE -->
+<img src="../homepage.jpg" alt="Homepage Image" class="hero-image">
 
-    <!-- CENTER CONTAINER -->
-    <div class="login-container">
-        <div class="login-card">
+<!-- CENTER CONTAINER -->
+<div class="login-container">
+    <div class="login-card">
 
-            <!-- LOGO ABOVE TITLE -->
-            <img src="../logotransparent.png" alt="Groovify Logo" class="logo-image">
+        <!-- LOGO ABOVE TITLE -->
+        <img src="../logotransparent.png" alt="Groovify Logo" class="logo-image">
 
-            <h1>Welcome Back</h1>
-            <p class="login-subtext">Access your playlists and discover new sounds.</p>
+        <h1>Welcome Back</h1>
+        <p class="login-subtext">Access your playlists and discover new sounds.</p>
 
-            <?php
+        <!-- ✅ SESSION TIMEOUT MESSAGE (ADDED) -->
+        <?php if (isset($_GET['timeout'])): ?>
+            <p style="
+                color:#ff4b4b;
+                text-align:center;
+                font-weight:600;
+                margin-bottom:10px;
+            ">
+                You were logged out due to inactivity.
+            </p>
+        <?php endif; ?>
+
+        <?php
         if (isset($_GET['error'])) {
             $msg = '';
             switch ($_GET['error']) {
@@ -58,32 +70,33 @@ if (isset($_SESSION['user_id'])) {
                 echo "<p style=\"color:red; text-align:center;\">$msg</p>";
             }
         }
-    ?>
-    <form action="login_process.php" method="POST">
-                <div class="input-group">
-                    <label>Email</label>
-                    <input type="email" name="email" required>
-                </div>
+        ?>
 
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" name="password" required>
-                </div>
+        <form action="login_process.php" method="POST">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
 
-                <p class="forgot-link">
-            <a href="forgot_password.php">Forgot Password?</a>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <p class="forgot-link">
+                <a href="forgot_password.php">Forgot Password?</a>
             </p>
 
-                <button type="submit" class="login-btn">Log In</button>
-            </form>
+            <button type="submit" class="login-btn">Log In</button>
+        </form>
 
-            <p class="signup-link">
-                Don’t have an account?
-                <a href="signup.php">Sign up here</a>
-            </p>
+        <p class="signup-link">
+            Don’t have an account?
+            <a href="signup.php">Sign up here</a>
+        </p>
 
-        </div>
     </div>
+</div>
 
 </body>
 </html>

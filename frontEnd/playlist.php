@@ -1,5 +1,7 @@
 <?php
 session_start();
+// ✅ Session TImeout
+$timeout = 300; // 5 minutes
 require_once("../config/db.php");
 
 if (!isset($_SESSION["user_id"])) {

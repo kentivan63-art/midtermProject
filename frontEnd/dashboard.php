@@ -1,7 +1,22 @@
 <?php
 session_start();
 
-/* ✅ SESSION CHECK FIRST */
+// ✅ Session Timeout
+$timeout = 300; // 5 minutes
+
+if (isset($_SESSION['last_activity'])) {
+    if (time() - $_SESSION['last_activity'] > $timeout) {
+        session_unset();
+        session_destroy();
+        header("Location: login.php?error=timeout");
+        exit;
+    }
+}
+
+/* ✅ UPDATE LAST ACTIVITY */
+$_SESSION['last_activity'] = time();
+
+/* ✅ SESSION CHECK */
 if (!isset($_SESSION["user_id"])) {
     header("Location: login.php");
     exit;
@@ -31,18 +46,15 @@ while($pl = $playlistResult->fetch_assoc()){
   <link rel="stylesheet" href="../assets/dashboard.css?v=3">
   <link rel="icon" type="image/x-icon" href="../groovifylogo.ico">
 
-  <!-- ✅ PASS PLAYLISTS TO JS -->
   <script>
-const USER_PLAYLISTS = <?= json_encode($playlistArray); ?>;
-</script>
-
+    const USER_PLAYLISTS = <?= json_encode($playlistArray); ?>;
+  </script>
 </head>
 
 <body>
 
 <div class="app">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="brand">
       <a href="index.php">
@@ -61,26 +73,18 @@ const USER_PLAYLISTS = <?= json_encode($playlistArray); ?>;
     <a class="logout" href="logout.php">Log out</a>
   </aside>
 
-  <!-- MAIN -->
   <main class="main" id="search">
 
     <header class="topbar">
       <div class="search">
         <span class="search-icon">⌕</span>
-        <input
-          id="jamendoQuery"
-          type="text"
-          placeholder="Search songs, artists, albums…"
-          autocomplete="off"
-        >
+        <input id="jamendoQuery" type="text" placeholder="Search songs..." autocomplete="off">
       </div>
-
-      <button class="btn" id="jamendoBtn" type="button">Search</button>
+      <button class="btn" id="jamendoBtn">Search</button>
     </header>
 
     <div class="hint" id="statusText">Loading tracks…</div>
 
-    <!-- RESULTS -->
     <section class="panel">
       <div class="panel-title">Results</div>
 
@@ -92,14 +96,12 @@ const USER_PLAYLISTS = <?= json_encode($playlistArray); ?>;
           <div class="col-menu"></div>
         </div>
 
-        <!-- JS injects here -->
         <div id="jamendoResults"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- PLAYER -->
   <footer class="player">
 
     <div class="now">
@@ -111,7 +113,7 @@ const USER_PLAYLISTS = <?= json_encode($playlistArray); ?>;
     </div>
 
     <div class="controls">
-      <button class="icon" id="btnPlayPause">⏯</button>
+      <button class="icon" id="btnPlayPause">▶</button>
 
       <div class="time">
         <span id="curTime">0:00</span>
@@ -133,7 +135,6 @@ const USER_PLAYLISTS = <?= json_encode($playlistArray); ?>;
 
 </div>
 
-<!-- ✅ LOAD JS LAST -->
 <script src="../assets/js/dashboard.js?v=999"></script>
 
 </body>

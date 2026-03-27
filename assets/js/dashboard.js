@@ -34,7 +34,7 @@ function fmtTime(s) {
 }
 
 /* PLAY TRACK */
-function playAtIndex(i) {
+async function playAtIndex(i) {
   if (!playlist.length) return;
 
   if (i < 0) i = playlist.length - 1;
@@ -43,8 +43,21 @@ function playAtIndex(i) {
   currentIndex = i;
   const track = playlist[i];
 
+  // Track listen
+  try {
+    const formData = new FormData();
+    formData.append('songID', track.id);
+    await fetch('./track_listen.php', {
+      method: 'POST',
+      body: formData
+    });
+  } catch (e) {
+    console.log('Track listen failed:', e);
+  }
+
   player.src = track.file_path;
   player.play().catch(() => {});
+
 
   npTitle.textContent = track.title;
   npArtist.textContent = track.artist;
@@ -223,23 +236,7 @@ player.addEventListener("ended", () => {
   playAtIndex(currentIndex + 1);
 });
 
-/* ADD TO PLAYLIST */
-function addToPlaylist(songId, playlistId) {
-  console.log("CLICKED", songId, playlistId);
 
-  fetch("add_to_playlist.php", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: `song_id=${songId}&playlist_id=${playlistId}`
-  })
-  .then(res => res.text())
-  .then(data => {
-    console.log("Server:", data);
-  })
-  .catch(err => console.error(err));
-}
 
 /* CLOSE MENU */
 document.addEventListener("click", () => {
@@ -251,4 +248,4 @@ document.addEventListener("click", () => {
 /* INIT */
 loadSongs();
 
-console.log("TRACK:", track);
+

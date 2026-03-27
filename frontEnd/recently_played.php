@@ -16,7 +16,8 @@ SELECT songs.title, songs.artist
 FROM listeninghistory
 JOIN songs ON listeninghistory.songID = songs.id
 WHERE listeninghistory.userID = ?
-ORDER BY listeninghistory.timestamp 
+ORDER BY listeninghistory.timestamp DESC
+LIMIT 10
 ";
 
 $stmt = $conn->prepare($sql);

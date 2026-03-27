@@ -42,16 +42,14 @@ CREATE TABLE IF NOT EXISTS listeninghistory (
     INDEX idx_userID (userID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---5. CREATE TABLE IF NOT EXISTS playlist_songs (
-    playlist_id INT AUTO_INCREMENT PRIMARY KEY,
-    playlistID INT NOT NULL,
-    song_id INT NOT NULL,
-    added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (playlistID) REFERENCES playlists(id) ON DELETE CASCADE,
-    FOREIGN KEY (songID) REFERENCES songs(id) ON DELETE CASCADE,
-    INDEX idx_playlistID (playlistID),
-    INDEX idx_songID (songID),
-    UNIQUE KEY unique_playlist_song (playlistID, songID)
+--5. CREATE TABLE IF NOT EXISTS playlists (
+    playlist_id INT AUTO_INCREMENT PRIMARY KEY,  
+    userID INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (userID) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_userID (userID)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- 6. Insert sample songs data

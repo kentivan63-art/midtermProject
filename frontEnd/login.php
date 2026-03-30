@@ -119,6 +119,38 @@ if (isset($_SESSION['user_id'])) {
                 Log In
             </button>
         </form>
+        <!-- ✅ GOOGLE LOGIN BUTTON -->
+<<div style="text-align:center; margin-top:15px;">
+    <a href="google_login.php" class="google-btn">
+        <img src="https://developers.google.com/identity/images/g-logo.png" class="google-icon">
+        Continue with Google
+    </a>
+</div>
+
+<style>
+.google-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: #fff;
+    color: #444;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    font-family: Arial, sans-serif;
+}
+
+.google-btn:hover {
+    background: #f5f5f5;
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+}
+</style>
 
         <p class="signup-link">
             Don’t have an account?

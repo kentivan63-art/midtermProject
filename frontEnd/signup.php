@@ -54,12 +54,7 @@
         <span>OR</span>
     </div>
 
-    <!-- GOOGLE SIGN UP -->
-    <a href="#" class="google-btn">
-        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
-        Continue with Google
-    </a>
-
+ 
     <p class="signup-link">
         Already have an account?
         <a href="login.php">Log in</a>

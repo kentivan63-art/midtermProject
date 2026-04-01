@@ -30,7 +30,7 @@ function fmtTime(s) {
   return `${m}:${String(r).padStart(2, "0")}`;
 }
 
-/* UPDATE PLAY BUTTON ICONS */
+/* UPDATE ICONS */
 function updateRowIcons() {
   results.querySelectorAll(".playdot").forEach((dot, idx) => {
     if (idx === currentIndex && !player.paused) dot.textContent = "⏸";
@@ -40,12 +40,9 @@ function updateRowIcons() {
   btnPlayPause.textContent = player.paused ? "⏯" : "⏸";
 }
 
-/* PLAY TRACK */
+/* PLAY */
 function playAtIndex(i) {
   if (!playlist.length) return;
-
-  if (i < 0) i = playlist.length - 1;
-  if (i >= playlist.length) i = 0;
 
   currentIndex = i;
   const track = playlist[i];
@@ -56,7 +53,6 @@ function playAtIndex(i) {
   npTitle.textContent = track.title;
   npArtist.textContent = track.artist;
 
-  // Highlight row
   if (currentRow) currentRow.classList.remove("playing");
   const row = results.querySelector(`[data-index="${i}"]`);
   if (row) {
@@ -85,9 +81,8 @@ function renderSongs(list) {
       <div class="col-num">${i + 1}</div>
       <div class="col-track">${track.title}</div>
       <div class="col-artist">${track.artist}</div>
-      <div class="col-action">
-        <span class="playdot">▶</span>
-      </div>
+      <div class="col-action"><span class="playdot">▶</span></div>
+
       <div class="col-menu">
         <div class="menu-wrapper">
           <button class="menu-btn">⋮</button>
@@ -107,27 +102,12 @@ function renderSongs(list) {
       </div>
     `;
 
-    // Row click: toggle if same, play new if different
-    row.addEventListener("click", (e) => {
-      const i = parseInt(row.dataset.index);
-      if (i === currentIndex) {
-        if (player.paused) player.play();
-        else player.pause();
-      } else {
-        playAtIndex(i);
-      }
-    });
+    // Play row
+    row.addEventListener("click", () => playAtIndex(i));
 
-    // Row playdot click also toggles same behavior
     row.querySelector(".playdot").addEventListener("click", (e) => {
       e.stopPropagation();
-      const i = parseInt(row.dataset.index);
-      if (i === currentIndex) {
-        if (player.paused) player.play();
-        else player.pause();
-      } else {
-        playAtIndex(i);
-      }
+      playAtIndex(i);
     });
 
     // Menu toggle
@@ -138,19 +118,41 @@ function renderSongs(list) {
 
     menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      document.querySelectorAll(".menu-dropdown").forEach(m => { if (m !== dropdown) m.style.display = "none"; });
+      document.querySelectorAll(".menu-dropdown").forEach(m => {
+        if (m !== dropdown) m.style.display = "none";
+      });
       dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
     });
 
+    // Toggle submenu
     addBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       submenu.style.display = submenu.style.display === "block" ? "none" : "block";
     });
 
+    // Add to playlist action
     row.querySelectorAll(".submenu-item").forEach(item => {
-      item.addEventListener("click", (e) => {
+      item.addEventListener("click", async (e) => {
         e.stopPropagation();
-        addToPlaylist(item.dataset.song, item.dataset.playlist);
+
+        const songId = item.dataset.song;
+        const playlistId = item.dataset.playlist;
+        const trackData = playlist.find(t => t.id == songId);
+
+        await fetch("add_to_playlist.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `song_id=${songId}
+          &playlist_id=${playlistId}
+          &title=${encodeURIComponent(trackData.title)}
+          &artist=${encodeURIComponent(trackData.artist)}
+          &file_path=${encodeURIComponent(trackData.file_path)}`
+        });
+
+        statusText.textContent = "✅ Added to playlist! Redirecting...";
+        setTimeout(() => {
+          window.location.href = "library.php";
+        }, 500);
       });
     });
 
@@ -158,18 +160,6 @@ function renderSongs(list) {
   });
 
   updateRowIcons();
-}
-
-/* ADD TO PLAYLIST */
-function addToPlaylist(songId, playlistId) {
-  fetch("add_to_playlist.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: `song_id=${songId}&playlist_id=${playlistId}`
-  })
-  .then(res => res.text())
-  .then(data => console.log("Server:", data))
-  .catch(err => console.error(err));
 }
 
 /* LOAD SONGS */
@@ -182,21 +172,20 @@ async function loadSongs(query = "") {
 
   playlist = data.results || [];
   renderSongs(playlist);
+
   statusText.textContent = `Showing ${playlist.length} track(s)`;
 }
 
 /* SEARCH */
 btn.addEventListener("click", () => loadSongs(qInput.value));
-qInput.addEventListener("keydown", (e) => { if (e.key === "Enter") loadSongs(qInput.value); });
+qInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") loadSongs(qInput.value);
+});
 
 /* PLAYER BUTTON */
 btnPlayPause.addEventListener("click", () => {
-  if (!player.src) {
-    if (playlist.length) playAtIndex(0);
-    return;
-  }
-
-  if (player.paused) player.play();
+  if (!player.src && playlist.length) playAtIndex(0);
+  else if (player.paused) player.play();
   else player.pause();
 });
 
@@ -222,7 +211,7 @@ seekBar.addEventListener("click", (e) => {
   player.currentTime = pct * player.duration;
 });
 
-/* CLOSE MENU */
+/* CLOSE MENU ON CLICK OUTSIDE */
 document.addEventListener("click", () => {
   document.querySelectorAll(".menu-dropdown").forEach(m => { m.style.display = "none"; });
 });

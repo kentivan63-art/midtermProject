@@ -23,7 +23,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if (password_verify($password, $user["password"])) {
             $_SESSION["user_id"] = $user["id"];
-            $_SESSION["full_name"] = $user["fullname"]; // matches your DB column
+            $_SESSION["full_name"] = $user["full_name"];
+
+            // Reset login attempt counter on successful login
+            $_SESSION["login_attempts"] = 0;
 
             header("Location: dashboard.php?login=success");
             exit;

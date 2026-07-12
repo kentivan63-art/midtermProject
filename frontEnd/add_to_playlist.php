@@ -1,14 +1,26 @@
 <?php
 session_start();
+// Session timeout handling
+$timeout = 300; // 5 minutes
+if (isset($_SESSION['last_activity'])) {
+    if (time() - $_SESSION['last_activity'] > $timeout) {
+        session_unset();
+        session_destroy();
+        exit;
+    }
+}
+$_SESSION['last_activity'] = time();
+
 require_once("../config/db.php");
 
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["userID"])) {
     exit;
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-    $userID = $_SESSION["user_id"];
+    $userID = $_SESSION["userID"];
+    $playlistID = $_POST["playlistID"] ?? null;
+    $songID = $_POST["songID"] ?? null;
 
     $playlistID = $_POST["playlist_id"] ?? null;
     $songID     = $_POST["song_id"] ?? null;
@@ -18,8 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($playlistID && $songID && $file_path) {
 
-        // ✅ SECURITY: check playlist ownership
-        $check = $conn->prepare("SELECT id FROM playlists WHERE id = ? AND userID = ?");
+        $check = $conn->prepare("SELECT playlistID FROM playlists WHERE playlistID = ? AND userID = ?");
         $check->bind_param("ii", $playlistID, $userID);
         $check->execute();
         $result = $check->get_result();

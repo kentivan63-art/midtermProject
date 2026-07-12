@@ -25,7 +25,7 @@ if ($_SESSION['login_attempts'] >= $max_attempts) {
     }
 }
 
-if (isset($_SESSION['user_id'])) {
+if (isset($_SESSION['userID'])) {
     header('Location: dashboard.php');
     exit;
 }
@@ -43,7 +43,7 @@ if (isset($_SESSION['user_id'])) {
     <img id="logo" src="../groovifytextlogo.png" alt="GroovifyText Logo">
     <ul class="nav-links">
         <li><a href="index.php">Home</a></li>
-        <?php if (isset($_SESSION['user_id'])): ?>
+        <?php if (isset($_SESSION['userID'])): ?>
             <li><a href="dashboard.php">Dashboard</a></li>
             <li><a href="logout_process.php">Log out</a></li>
         <?php else: ?>

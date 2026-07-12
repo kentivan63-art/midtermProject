@@ -12,8 +12,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit;
     }
 
-    // Updated: use 'fullname' to match your DB
-    $stmt = $conn->prepare("SELECT id, full_name, password FROM users WHERE email = ?");
+    // Updated: use 'userID' and 'fullname' to match your DB
+    $stmt = $conn->prepare("SELECT userID, fullname, password FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -22,8 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $user = $result->fetch_assoc();
 
         if (password_verify($password, $user["password"])) {
-            $_SESSION["user_id"] = $user["id"];
-            $_SESSION["full_name"] = $user["fullname"]; // matches your DB column
+            $_SESSION["userID"] = $user["userID"];
+            $_SESSION["fullname"] = $user["fullname"]; // matches your DB column
 
             header("Location: dashboard.php?login=success");
             exit;

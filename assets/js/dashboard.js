@@ -1,6 +1,8 @@
 const API = "/midtermProject/frontEnd/search_songs.php";
 
+console.log("=== DASHBOARD.JS LOADED ===");
 console.log("PLAYLISTS:", USER_PLAYLISTS);
+console.log("Current page:", window.location.href);
 
 const qInput = document.getElementById("jamendoQuery");
 const btn = document.getElementById("jamendoBtn");
@@ -42,10 +44,20 @@ function updateRowIcons() {
 
 /* PLAY */
 function playAtIndex(i) {
-  if (!playlist.length) return;
+  console.log("=== playAtIndex CALLED ===");
+  console.log("Index:", i);
+  console.log("Playlist length:", playlist.length);
+
+  if (!playlist.length) {
+    console.log("❌ Playlist is empty, cannot play");
+    return;
+  }
 
   currentIndex = i;
   const track = playlist[i];
+
+  console.log("Playing track:", track);
+  console.log("Song ID:", track.songID);
 
   player.src = track.file_path;
   player.play().catch(() => {});
@@ -53,6 +65,11 @@ function playAtIndex(i) {
   npTitle.textContent = track.title;
   npArtist.textContent = track.artist;
 
+  // Record listening history
+  console.log("About to call recordListeningHistory for songID:", track.songID);
+  recordListeningHistory(track.songID);
+
+  // Highlight row
   if (currentRow) currentRow.classList.remove("playing");
   const row = results.querySelector(`[data-index="${i}"]`);
   if (row) {
@@ -91,8 +108,8 @@ function renderSongs(list) {
             <div class="submenu">
               ${USER_PLAYLISTS.map(pl => `
                 <div class="submenu-item"
-                     data-song="${track.id}"
-                     data-playlist="${pl.id}">
+                     data-song="${track.songID}"
+                     data-playlist="${pl.playlistID}">
                   ${pl.name}
                 </div>
               `).join('')}
@@ -102,12 +119,36 @@ function renderSongs(list) {
       </div>
     `;
 
-    // Play row
-    row.addEventListener("click", () => playAtIndex(i));
+    // Row click: toggle if same, play new if different
+    row.addEventListener("click", (e) => {
+      const i = parseInt(row.dataset.index);
+      if (i === currentIndex) {
+        if (player.paused) {
+          player.play();
+          // Record listening history when resuming the same song
+          recordListeningHistory(playlist[i].songID);
+        } else {
+          player.pause();
+        }
+      } else {
+        playAtIndex(i);
+      }
+    });
 
     row.querySelector(".playdot").addEventListener("click", (e) => {
       e.stopPropagation();
-      playAtIndex(i);
+      const i = parseInt(row.dataset.index);
+      if (i === currentIndex) {
+        if (player.paused) {
+          player.play();
+          // Record listening history when resuming the same song
+          recordListeningHistory(playlist[i].songID);
+        } else {
+          player.pause();
+        }
+      } else {
+        playAtIndex(i);
+      }
     });
 
     // Menu toggle
@@ -162,6 +203,62 @@ function renderSongs(list) {
   updateRowIcons();
 }
 
+/* ADD TO PLAYLIST */
+function addToPlaylist(songId, playlistId) {
+  fetch("add_to_playlist.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `songID=${songId}&playlistID=${playlistId}`,
+    credentials: 'same-origin'
+  })
+  .then(res => res.text())
+  .then(data => console.log("Server:", data))
+  .catch(err => console.error(err));
+}
+
+/* RECORD LISTENING HISTORY */
+function recordListeningHistory(songId) {
+  console.log("=== LISTENING HISTORY TRACKING START ===");
+  console.log("Attempting to record listening history for songID:", songId);
+  console.log("Current URL:", window.location.href);
+  console.log("Fetch URL:", "track_listen.php");
+
+  fetch("track_listen.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `songID=${songId}`,
+    credentials: 'same-origin'
+  })
+  .then(res => {
+    console.log("Response received. Status:", res.status);
+    console.log("Response OK:", res.ok);
+    console.log("Response type:", res.type);
+    return res.json();
+  })
+  .then(data => {
+    console.log("=== SERVER RESPONSE ===");
+    console.log("Full response data:", data);
+    if (data.success) {
+      console.log("✅ SUCCESS: Listening history recorded");
+      console.log("Insert ID:", data.insert_id);
+      console.log("User ID:", data.userID);
+      console.log("Song ID:", data.songID);
+    } else {
+      console.error("❌ FAILED: Server returned error");
+      console.error("Error message:", data.error);
+      console.error("Full error data:", data);
+    }
+    console.log("=== LISTENING HISTORY TRACKING END ===");
+  })
+  .catch(err => {
+    console.error("=== FETCH ERROR ===");
+    console.error("Error type:", err.name);
+    console.error("Error message:", err.message);
+    console.error("Full error:", err);
+    console.error("=== LISTENING HISTORY TRACKING END ===");
+  });
+}
+
 /* LOAD SONGS */
 async function loadSongs(query = "") {
   statusText.textContent = "Loading tracks...";
@@ -184,9 +281,29 @@ qInput.addEventListener("keydown", (e) => {
 
 /* PLAYER BUTTON */
 btnPlayPause.addEventListener("click", () => {
-  if (!player.src && playlist.length) playAtIndex(0);
-  else if (player.paused) player.play();
-  else player.pause();
+  console.log("=== PLAY BUTTON CLICKED ===");
+  console.log("Player src:", player.src);
+  console.log("Current index:", currentIndex);
+  console.log("Playlist length:", playlist.length);
+
+  if (!player.src) {
+    console.log("No player src, playing first track");
+    if (playlist.length) playAtIndex(0);
+    return;
+  }
+
+  if (player.paused) {
+    console.log("Player was paused, resuming");
+    player.play();
+    // Record listening history when resuming via play button
+    if (currentIndex >= 0 && playlist[currentIndex]) {
+      console.log("Recording history for current track");
+      recordListeningHistory(playlist[currentIndex].songID);
+    }
+  } else {
+    console.log("Player was playing, pausing");
+    player.pause();
+  }
 });
 
 /* EVENTS */

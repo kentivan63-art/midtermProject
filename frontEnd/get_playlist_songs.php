@@ -1,13 +1,13 @@
 <?php
 require_once __DIR__ . "/../config/db.php";
 
-$playlist_id = $_GET["playlist_id"] ?? 0;
+$playlistID = $_GET["playlist_id"] ?? 0;
 
 $sql = "
-SELECT songs.* 
-FROM playlist_songs 
-JOIN songs ON songs.id = playlist_songs.song_id
-WHERE playlist_songs.playlist_id = $playlist_id
+SELECT songs.*
+FROM playlist_songs
+JOIN songs ON songs.songID = playlist_songs.songID
+WHERE playlist_songs.playlistID = $playlistID
 ";
 
 $result = $conn->query($sql);

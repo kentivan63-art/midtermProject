@@ -5,16 +5,16 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once("../config/db.php");
 
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["userID"])) {
     return;
 }
 
-$userID = $_SESSION["user_id"];
+$userID = $_SESSION["userID"];
 
 $sql = "
 SELECT songs.title, songs.artist
 FROM listeninghistory
-JOIN songs ON listeninghistory.songID = songs.id
+JOIN songs ON listeninghistory.songID = songs.songID
 WHERE listeninghistory.userID = ?
 ORDER BY listeninghistory.timestamp 
 ";

@@ -1,19 +1,19 @@
 <?php
 session_start();
 
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["userID"])) {
     header("Location: login.php");
     exit;
 }
 
 require_once("../config/db.php");
 
-$userID = $_SESSION["user_id"];
+$userID = $_SESSION["userID"];
 
 $stmt = $conn->prepare("
     SELECT s.title, s.artist, lh.timestamp
     FROM listeninghistory lh
-    JOIN songs s ON lh.songID = s.id
+    JOIN songs s ON lh.songID = s.songID
     WHERE lh.userID = ?
     ORDER BY lh.timestamp DESC
     LIMIT 50

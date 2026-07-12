@@ -22,7 +22,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $playlistID = $_POST["playlistID"] ?? null;
     $songID = $_POST["songID"] ?? null;
 
-    if ($playlistID && $songID) {
+    $playlistID = $_POST["playlist_id"] ?? null;
+    $songID     = $_POST["song_id"] ?? null;
+    $title      = $_POST["title"] ?? '';
+    $artist     = $_POST["artist"] ?? '';
+    $file_path  = $_POST["file_path"] ?? '';
+
+    if ($playlistID && $songID && $file_path) {
 
         $check = $conn->prepare("SELECT playlistID FROM playlists WHERE playlistID = ? AND userID = ?");
         $check->bind_param("ii", $playlistID, $userID);
@@ -30,9 +36,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $result = $check->get_result();
 
         if ($result->num_rows > 0) {
-            $stmt = $conn->prepare("INSERT INTO playlist_songs (playlistID, songID) VALUES (?, ?)");
-            $stmt->bind_param("ii", $playlistID, $songID);
-            $stmt->execute();
+
+            // ✅ OPTIONAL: prevent duplicate songs
+            $dup = $conn->prepare("SELECT id FROM playlist_songs WHERE playlistID=? AND songID=?");
+            $dup->bind_param("ii", $playlistID, $songID);
+            $dup->execute();
+
+            if ($dup->get_result()->num_rows === 0) {
+
+                $stmt = $conn->prepare("
+                    INSERT INTO playlist_songs 
+                    (playlistID, songID, title, artist, file_path) 
+                    VALUES (?, ?, ?, ?, ?)
+                ");
+                $stmt->bind_param("iisss", $playlistID, $songID, $title, $artist, $file_path);
+                $stmt->execute();
+            }
         }
     }
 

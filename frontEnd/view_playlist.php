@@ -1,17 +1,29 @@
 <?php
 session_start();
+// Session timeout handling
+$timeout = 300; // 5 minutes
+if (isset($_SESSION['last_activity'])) {
+    if (time() - $_SESSION['last_activity'] > $timeout) {
+        session_unset();
+        session_destroy();
+        header("Location: login.php?error=timeout");
+        exit;
+    }
+}
+$_SESSION['last_activity'] = time();
+
 require_once("../config/db.php");
 
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["userID"])) {
     header("Location: login.php");
     exit;
 }
 
-$userID = $_SESSION["user_id"];
+$userID = $_SESSION["userID"];
 $playlistID = $_GET["id"] ?? 0;
 
 // GET PLAYLIST INFO
-$stmt = $conn->prepare("SELECT id, name FROM playlists WHERE id = ? AND userID = ?");
+$stmt = $conn->prepare("SELECT playlistID, name FROM playlists WHERE playlistID = ? AND userID = ?");
 $stmt->bind_param("ii", $playlistID, $userID);
 $stmt->execute();
 $playlistResult = $stmt->get_result();
@@ -25,15 +37,21 @@ $playlist = $playlistResult->fetch_assoc();
 
 // GET SONGS IN PLAYLIST
 $stmtSongs = $conn->prepare("
-    SELECT songs.id, songs.title, songs.artist, songs.file_path
+    SELECT songs.songID, songs.title, songs.artist, songs.file_path
     FROM playlist_songs
-    JOIN songs ON playlist_songs.songID = songs.id
+    JOIN songs ON playlist_songs.songID = songs.songID
     WHERE playlist_songs.playlistID = ?
     ORDER BY playlist_songs.added_at DESC
 ");
 $stmtSongs->bind_param("i", $playlistID);
 $stmtSongs->execute();
 $songs = $stmtSongs->get_result();
+
+// Convert songs to array for JavaScript
+$songsArray = [];
+while($song = $songs->fetch_assoc()){
+    $songsArray[] = $song;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -44,6 +62,32 @@ $songs = $stmtSongs->get_result();
     <link rel="stylesheet" href="../assets/dashboard.css?v=3">
     <link rel="icon" type="image/x-icon" href="../groovifylogo.ico">
 </head>
+<body>
+
+<script>
+const playlistSongs = <?= json_encode($songsArray); ?>;
+
+function playSong(songID, title, artist, filePath) {
+    // Record listening history
+    fetch("track_listen.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `songID=${songID}`,
+        credentials: 'same-origin'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Listening history recorded:", data);
+            // Play the song (you can add audio player logic here)
+            alert(`Now playing: ${title} by ${artist}`);
+        } else {
+            console.error("Failed to record listening history:", data.error);
+        }
+    })
+    .catch(err => console.error("Error recording listening history:", err));
+}
+</script>
 <body>
 
 <div class="app">
@@ -70,7 +114,7 @@ $songs = $stmtSongs->get_result();
         <section class="panel">
             <div class="panel-title" style="padding:14px 14px 0;">Songs</div>
 
-            <?php if ($songs->num_rows > 0): ?>
+            <?php if (count($songsArray) > 0): ?>
                 <div class="table">
                     <div class="row head">
                         <div class="col-num">#</div>
@@ -80,14 +124,14 @@ $songs = $stmtSongs->get_result();
                     </div>
 
                     <?php $count = 1; ?>
-                    <?php while ($song = $songs->fetch_assoc()): ?>
-                        <div class="row item">
+                    <?php foreach($songsArray as $song): ?>
+                        <div class="row item" style="cursor: pointer;" onclick="playSong(<?php echo $song['songID']; ?>, '<?php echo htmlspecialchars($song['title'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($song['artist'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($song['file_path'], ENT_QUOTES); ?>')">
                             <div class="col-num"><?php echo $count++; ?></div>
                             <div class="col-track"><?php echo htmlspecialchars($song["title"]); ?></div>
                             <div class="col-artist"><?php echo htmlspecialchars($song["artist"]); ?></div>
                             <div class="col-action">▶</div>
                         </div>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </div>
             <?php else: ?>
                 <div style="padding:16px; color:rgba(255,255,255,.65);">

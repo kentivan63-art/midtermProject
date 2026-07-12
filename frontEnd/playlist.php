@@ -1,10 +1,20 @@
 <?php
 session_start();
-// ✅ Session TImeout
+// Session timeout handling
 $timeout = 300; // 5 minutes
+if (isset($_SESSION['last_activity'])) {
+    if (time() - $_SESSION['last_activity'] > $timeout) {
+        session_unset();
+        session_destroy();
+        header("Location: login.php?error=timeout");
+        exit;
+    }
+}
+$_SESSION['last_activity'] = time();
+
 require_once("../config/db.php");
 
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["userID"])) {
     header("Location: login.php");
     exit;
 }
@@ -16,23 +26,29 @@ if (!$playlist_id) {
 }
 
 /* GET PLAYLIST NAME */
-$stmt = $conn->prepare("SELECT name FROM playlists WHERE id = ?");
+$stmt = $conn->prepare("SELECT name FROM playlists WHERE playlistID = ?");
 $stmt->bind_param("i", $playlist_id);
 $stmt->execute();
 $playlist = $stmt->get_result()->fetch_assoc();
 
 /* GET SONGS */
 $sql = "
-SELECT songs.title, songs.artist
+SELECT songs.songID, songs.title, songs.artist, songs.file_path
 FROM playlist_songs
-JOIN songs ON playlist_songs.song_id = songs.id
-WHERE playlist_songs.playlist_id = ?
+JOIN songs ON playlist_songs.songID = songs.songID
+WHERE playlist_songs.playlistID = ?
 ";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $playlist_id);
 $stmt->execute();
 $songs = $stmt->get_result();
+
+// Convert songs to array for JavaScript
+$songsArray = [];
+while($song = $songs->fetch_assoc()){
+    $songsArray[] = $song;
+}
 ?>
 
 <!DOCTYPE html>
@@ -46,6 +62,32 @@ $songs = $stmt->get_result();
 <link rel="stylesheet" href="../assets/playlist.css">
 <link rel="icon" href="../groovifylogo.ico">
 </head>
+<body>
+
+<script>
+const playlistSongs = <?= json_encode($songsArray); ?>;
+
+function playSong(songID, title, artist, filePath) {
+    // Record listening history
+    fetch("track_listen.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `songID=${songID}`,
+        credentials: 'same-origin'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Listening history recorded:", data);
+            // Play the song (you can add audio player logic here)
+            alert(`Now playing: ${title} by ${artist}`);
+        } else {
+            console.error("Failed to record listening history:", data.error);
+        }
+    })
+    .catch(err => console.error("Error recording listening history:", err));
+}
+</script>
 
 <body>
 
@@ -76,7 +118,7 @@ $songs = $stmt->get_result();
         </header>
 
         <!-- SONG LIST -->
-        <?php if ($songs->num_rows > 0): ?>
+        <?php if (count($songsArray) > 0): ?>
 
         <div class="playlist-container">
 
@@ -88,15 +130,15 @@ $songs = $stmt->get_result();
             </div>
 
             <?php $count = 1; ?>
-            <?php while($song = $songs->fetch_assoc()): ?>
+            <?php foreach($songsArray as $song): ?>
 
-                <div class="playlist-row">
+                <div class="playlist-row" style="cursor: pointer;" onclick="playSong(<?php echo $song['songID']; ?>, '<?php echo htmlspecialchars($song['title'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($song['artist'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($song['file_path'], ENT_QUOTES); ?>')">
                     <div class="col-num"><?php echo $count++; ?></div>
                     <div class="col-title"><?php echo htmlspecialchars($song['title']); ?></div>
                     <div class="col-artist"><?php echo htmlspecialchars($song['artist']); ?></div>
                 </div>
 
-            <?php endwhile; ?>
+            <?php endforeach; ?>
 
         </div>
 

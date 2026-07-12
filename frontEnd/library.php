@@ -1,15 +1,25 @@
 <?php
 session_start();
-// ✅ PUT IT HERE
+// Session timeout handling
 $timeout = 300; // 5 minutes
+if (isset($_SESSION['last_activity'])) {
+    if (time() - $_SESSION['last_activity'] > $timeout) {
+        session_unset();
+        session_destroy();
+        header("Location: login.php?error=timeout");
+        exit;
+    }
+}
+$_SESSION['last_activity'] = time();
+
 require_once("../config/db.php");
 
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["userID"])) {
     header("Location: login.php");
     exit;
 }
 
-$userID = $_SESSION["user_id"];
+$userID = $_SESSION["userID"];
 $message = "";
 
 // Create playlist
@@ -18,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["playlist_name"])) {
 
     if (!empty($playlistName)) {
         // Check if playlist already exists for this user
-        $checkStmt = $conn->prepare("SELECT id FROM playlists WHERE userID = ? AND name = ?");
+        $checkStmt = $conn->prepare("SELECT playlistID FROM playlists WHERE userID = ? AND name = ?");
         $checkStmt->bind_param("is", $userID, $playlistName);
         $checkStmt->execute();
         $checkResult = $checkStmt->get_result();
@@ -42,7 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["playlist_name"])) {
 // Delete playlist
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["delete_playlist_id"])) {
     $deleteID = (int)$_POST["delete_playlist_id"];
-    $stmt = $conn->prepare("DELETE FROM playlists WHERE id = ? AND userID = ?");
+    $stmt = $conn->prepare("DELETE FROM playlists WHERE playlistID = ? AND userID = ?");
     $stmt->bind_param("ii", $deleteID, $userID);
     $stmt->execute();
     $stmt->close();
@@ -52,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["delete_playlist_id"])
 }
 
 // Get user's playlists
-$stmt = $conn->prepare("SELECT id, name, created_at FROM playlists WHERE userID = ? ORDER BY created_at DESC");
+$stmt = $conn->prepare("SELECT playlistID, name, created_at FROM playlists WHERE userID = ? ORDER BY created_at DESC");
 $stmt->bind_param("i", $userID);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -171,14 +181,14 @@ $result = $stmt->get_result();
                         <div class="row item">
                             <div class="col-num"><?php echo $count++; ?></div>
                             <div class="col-track">
-                                <a href="playlist.php?id=<?php echo $row['id']; ?>" class="playlist-link">
+                                <a href="playlist.php?id=<?php echo $row['playlistID']; ?>" class="playlist-link">
                                     <?php echo htmlspecialchars($row["name"]); ?>
                                 </a>
                             </div>
                             <div class="col-artist"><?php echo htmlspecialchars($row["created_at"]); ?></div>
                             <div class="col-action">
                                 <form method="POST" action="library.php" style="display:inline;">
-                                    <input type="hidden" name="delete_playlist_id" value="<?php echo $row['id']; ?>">
+                                    <input type="hidden" name="delete_playlist_id" value="<?php echo $row['playlistID']; ?>">
                                     <button type="submit" class="remove-btn" style="
                                         background: #1db954;
                                         border: none;

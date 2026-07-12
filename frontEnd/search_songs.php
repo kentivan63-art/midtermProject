@@ -11,7 +11,7 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 
 // create the songs table if it doesn't exist yet
 $conn->query("CREATE TABLE IF NOT EXISTS songs (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    songID INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     artist VARCHAR(255) NOT NULL,
     file_path VARCHAR(500) NOT NULL
@@ -49,16 +49,16 @@ if ($limit < 1 || $limit > 500) $limit = 200;
 
 if ($q === "") {
     $stmt = $conn->prepare("
-        SELECT id, title, artist, file_path
+        SELECT songID, title, artist, file_path
         FROM songs
-        ORDER BY id DESC
+        ORDER BY songID DESC
         LIMIT ?
     ");
     $stmt->bind_param("i", $limit);
 } else {
     $like = "%" . $q . "%";
     $stmt = $conn->prepare("
-        SELECT id, title, artist, file_path
+        SELECT songID, title, artist, file_path
         FROM songs
         WHERE title LIKE ? OR artist LIKE ?
         ORDER BY title ASC

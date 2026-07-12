@@ -17,7 +17,7 @@ if (isset($_SESSION['last_activity'])) {
 $_SESSION['last_activity'] = time();
 
 /* ✅ SESSION CHECK */
-if (!isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["userID"])) {
     header("Location: login.php");
     exit;
 }
@@ -25,8 +25,8 @@ if (!isset($_SESSION["user_id"])) {
 require_once("../config/db.php");
 
 /* ✅ GET USER PLAYLISTS */
-$stmt = $conn->prepare("SELECT id, name FROM playlists WHERE userID=?");
-$stmt->bind_param("i", $_SESSION["user_id"]);
+$stmt = $conn->prepare("SELECT playlistID, name FROM playlists WHERE userID = ?");
+$stmt->bind_param("i", $_SESSION["userID"]);
 $stmt->execute();
 $playlistResult = $stmt->get_result();
 
@@ -135,7 +135,7 @@ while($pl = $playlistResult->fetch_assoc()){
 
 </div>
 
-<script src="../assets/js/dashboard.js?v=999"></script>
+<script src="../assets/js/dashboard.js?v=<?php echo time(); ?>"></script>
 
 </body>
 </html>

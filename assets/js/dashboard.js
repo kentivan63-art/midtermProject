@@ -205,15 +205,30 @@ function renderSongs(list) {
 
 /* ADD TO PLAYLIST */
 function addToPlaylist(songId, playlistId) {
+  console.log("Adding to playlist - songID:", songId, "playlistID:", playlistId);
+  
   fetch("add_to_playlist.php", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: `songID=${songId}&playlistID=${playlistId}`,
     credentials: 'same-origin'
   })
-  .then(res => res.text())
-  .then(data => console.log("Server:", data))
-  .catch(err => console.error(err));
+  .then(res => res.json())
+  .then(data => {
+    console.log("Server response:", data);
+    if (data.success) {
+      console.log("✅ Successfully added to playlist");
+      // Optional: Show user feedback
+      // alert("Song added to playlist!");
+    } else {
+      console.error("❌ Failed to add to playlist:", data.error);
+      // Optional: Show error to user
+      // alert("Error: " + data.error);
+    }
+  })
+  .catch(err => {
+    console.error("Network error:", err);
+  });
 }
 
 /* RECORD LISTENING HISTORY */

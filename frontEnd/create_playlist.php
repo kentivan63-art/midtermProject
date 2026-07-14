@@ -21,13 +21,34 @@ if (!isset($_SESSION["userID"])) {
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $playlistName = $_POST["playlist_name"];
+    $playlistName = trim($_POST["playlist_name"] ?? "");
     $userID = $_SESSION["userID"];
 
-    $stmt = $conn->prepare("INSERT INTO playlists (userID, name) VALUES (?, ?)");
-    $stmt->bind_param("is", $userID, $playlistName);
-    $stmt->execute();
+    // Input validation
+    if (empty($playlistName)) {
+        error_log("Empty playlist name provided");
+        header("Location: library.php?error=empty_name");
+        exit;
+    }
 
-    header("Location: library.php");
+    // Sanitize playlist name
+    $playlistName = htmlspecialchars($playlistName, ENT_QUOTES, 'UTF-8');
+
+    $stmt = $conn->prepare("INSERT INTO playlists (userID, name) VALUES (?, ?)");
+    if (!$stmt) {
+        error_log("Prepare failed: " . $conn->error);
+        header("Location: library.php?error=db_error");
+        exit;
+    }
+    
+    $stmt->bind_param("is", $userID, $playlistName);
+    if ($stmt->execute()) {
+        error_log("Successfully created playlist: " . $playlistName . " for userID: " . $userID);
+        header("Location: library.php?success=created");
+    } else {
+        error_log("Execute failed: " . $stmt->error);
+        header("Location: library.php?error=execute_failed");
+    }
+    $stmt->close();
 }
 ?>

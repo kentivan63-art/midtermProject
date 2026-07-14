@@ -37,8 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 if (!isset($_SESSION["userID"])) {
     echo json_encode([
         "success" => false,
-        "error" => "User not logged in",
-        "session" => $_SESSION
+        "error" => "User not logged in"
     ]);
     exit;
 }
@@ -48,7 +47,16 @@ $userID = $_SESSION["userID"];
 
 error_log("userID from session: " . $userID);
 error_log("songID received: " . $songID);
-error_log("Full session data: " . print_r($_SESSION, true));
+
+// Input validation - ensure songID is a valid integer
+if (!filter_var($songID, FILTER_VALIDATE_INT)) {
+    error_log("Invalid input: songID is not a valid integer");
+    echo json_encode([
+        "success" => false,
+        "error" => "Invalid songID parameter"
+    ]);
+    exit;
+}
 
 if (!$songID) {
     echo json_encode([

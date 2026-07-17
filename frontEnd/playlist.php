@@ -19,29 +19,27 @@ if (!isset($_SESSION["userID"])) {
     exit;
 }
 
-$userID = $_SESSION["user_id"];
+$userID = $_SESSION["userID"];
 $playlistID = (int)($_GET['id'] ?? 0);
 
-if (!$playlist_id) {
+if (!$playlistID) {
     die("No playlist selected");
 }
 
 /* GET PLAYLIST NAME */
 $stmt = $conn->prepare("SELECT name FROM playlists WHERE playlistID = ?");
-$stmt->bind_param("i", $playlist_id);
+$stmt->bind_param("i", $playlistID);
 $stmt->execute();
 $playlist = $stmt->get_result()->fetch_assoc();
 
 /* GET SONGS */
-$sql = "
-SELECT songs.songID, songs.title, songs.artist, songs.file_path
-FROM playlist_songs
-JOIN songs ON playlist_songs.songID = songs.songID
-WHERE playlist_songs.playlistID = ?
-";
-
-// GET SONGS
-$stmt = $conn->prepare("SELECT * FROM playlist_songs WHERE playlistID=? ORDER BY created_at ASC");
+$stmt = $conn->prepare("
+    SELECT songs.songID, songs.title, songs.artist, songs.file_path
+    FROM playlist_songs
+    JOIN songs ON playlist_songs.songID = songs.songID
+    WHERE playlist_songs.playlistID = ?
+    ORDER BY playlist_songs.added_at ASC
+");
 $stmt->bind_param("i", $playlistID);
 $stmt->execute();
 $songs = $stmt->get_result();
@@ -52,13 +50,6 @@ while($song = $songs->fetch_assoc()){
     $songsArray[] = $song;
 }
 ?>
-
-$songs = [];
-while($row = $result->fetch_assoc()){
-    $songs[] = $row;
-}
-
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,40 +59,7 @@ while($row = $result->fetch_assoc()){
 <link rel="stylesheet" href="../assets/dashboard.css?v=3">
 <link rel="stylesheet" href="../assets/library.css?v=3">
 <link rel="icon" type="image/x-icon" href="../groovifylogo.ico">
-<style>
-/* Keep small overrides for playlist */
-.row.item { cursor:pointer; }
-.row.item.playing { background: rgba(29,185,84,0.1); }
-.playdot { cursor:pointer; }
-</style>
 </head>
-<body>
-
-<script>
-const playlistSongs = <?= json_encode($songsArray); ?>;
-
-function playSong(songID, title, artist, filePath) {
-    // Record listening history
-    fetch("track_listen.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `songID=${songID}`,
-        credentials: 'same-origin'
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            console.log("Listening history recorded:", data);
-            // Play the song (you can add audio player logic here)
-            alert(`Now playing: ${title} by ${artist}`);
-        } else {
-            console.error("Failed to record listening history:", data.error);
-        }
-    })
-    .catch(err => console.error("Error recording listening history:", err));
-}
-</script>
-
 <body>
 
 <div class="app">
@@ -126,28 +84,33 @@ function playSong(songID, title, artist, filePath) {
             <h2 style="font-size:22px;font-weight:800;"><?php echo htmlspecialchars($playlist['name']); ?></h2>
         </header>
 
+        <div class="hint" id="statusText"><?php echo count($songsArray); ?> track(s)</div>
+
         <!-- SONG LIST -->
-        <?php if (count($songsArray) > 0): ?>
-
-        <div class="playlist-container">
-
-            <!-- HEADER -->
-            <div class="playlist-header">
-                <div>#</div>
-                <div>Title</div>
-                <div>Artist</div>
-            </div>
-
-            <?php $count = 1; ?>
-            <?php foreach($songsArray as $song): ?>
-
-                <div class="playlist-row" style="cursor: pointer;" onclick="playSong(<?php echo $song['songID']; ?>, '<?php echo htmlspecialchars($song['title'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($song['artist'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($song['file_path'], ENT_QUOTES); ?>')">
-                    <div class="col-num"><?php echo $count++; ?></div>
-                    <div class="col-title"><?php echo htmlspecialchars($song['title']); ?></div>
-                    <div class="col-artist"><?php echo htmlspecialchars($song['artist']); ?></div>
+        <section class="panel">
+            <div class="table">
+                <div class="row head">
+                    <div class="col-num">#</div>
+                    <div class="col-track">Track</div>
+                    <div class="col-artist">Artist</div>
+                    <div class="col-action"></div>
                 </div>
 
-            <?php endforeach; ?>
+                <?php if (count($songsArray) > 0): ?>
+                    <?php $count = 1; ?>
+                    <?php foreach($songsArray as $song): ?>
+                        <div class="row item" data-index="<?php echo $count - 1; ?>" data-title="<?php echo htmlspecialchars($song['title'], ENT_QUOTES); ?>" data-artist="<?php echo htmlspecialchars($song['artist'], ENT_QUOTES); ?>" data-file="<?php echo htmlspecialchars($song['file_path'], ENT_QUOTES); ?>" data-songid="<?php echo $song['songID']; ?>">
+                            <div class="col-num"><?php echo $count++; ?></div>
+                            <div class="col-track"><?php echo htmlspecialchars($song['title']); ?></div>
+                            <div class="col-artist"><?php echo htmlspecialchars($song['artist']); ?></div>
+                            <div class="col-action"><span class="playdot">▶</span></div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div style="padding:14px; color:rgba(255,255,255,0.6)">No tracks in this playlist.</div>
+                <?php endif; ?>
+            </div>
+        </section>
 
     <!-- FOOTER PLAYER -->
     <footer class="player">
@@ -189,20 +152,42 @@ const durTime = document.getElementById("durTime");
 const seekBar = document.getElementById("seekBar");
 const seekFill = document.getElementById("seekFill");
 const vol = document.getElementById("vol");
+const statusText = document.getElementById("statusText");
 
 let playlist = Array.from(rows).map(r=>({
     title: r.dataset.title,
     artist: r.dataset.artist,
-    file_path: r.dataset.file
+    file_path: r.dataset.file,
+    songID: r.dataset.songid
 }));
 let currentIndex = -1;
 let currentRow = null;
 
 function fmtTime(s){ if(!isFinite(s)) return "0:00"; const m=Math.floor(s/60); const r=Math.floor(s%60); return `${m}:${String(r).padStart(2,"0")}`; }
+
 function updateRowIcons(){
     rows.forEach((r,i)=>r.querySelector(".playdot").textContent = i===currentIndex&&!player.paused?"⏸":"▶");
     btnPlayPause.textContent = player.paused?"⏯":"⏸";
 }
+
+function recordListeningHistory(songId) {
+    fetch("track_listen.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `songID=${songId}`,
+        credentials: 'same-origin'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Listening history recorded:", data);
+        } else {
+            console.error("Failed to record listening history:", data.error);
+        }
+    })
+    .catch(err => console.error("Error recording listening history:", err));
+}
+
 function playAtIndex(i){
     if(!playlist.length) return;
     currentIndex=i;
@@ -211,10 +196,16 @@ function playAtIndex(i){
     player.play().catch(()=>{});
     npTitle.textContent=track.title;
     npArtist.textContent=track.artist;
+    
+    // Record listening history
+    recordListeningHistory(track.songID);
+    
     if(currentRow) currentRow.classList.remove("playing");
     currentRow=rows[i]; currentRow.classList.add("playing");
     updateRowIcons();
+    statusText.textContent = "Now playing: " + track.title;
 }
+
 rows.forEach((r,i)=>{
     r.addEventListener("click",()=>playAtIndex(i));
     r.querySelector(".playdot").addEventListener("click",e=>{ e.stopPropagation(); playAtIndex(i); });

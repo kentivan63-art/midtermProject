@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS playlist_songs (
     INDEX idx_playlistID (playlistID),
     INDEX idx_songID (songID),
     UNIQUE KEY unique_playlist_song (playlistID, songID)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Insert sample songs data
 INSERT INTO songs (title, artist, file_path) VALUES

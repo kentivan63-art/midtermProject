@@ -196,11 +196,7 @@ function renderSongs(list) {
         await fetch("add_to_playlist.php", {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: `songID=${songId}
-          &playlistID=${playlistId}
-          &title=${encodeURIComponent(trackData.title)}
-          &artist=${encodeURIComponent(trackData.artist)}
-          &file_path=${encodeURIComponent(trackData.file_path)}`
+          body: `songID=${songId}&playlistID=${playlistId}`
         });
 
         statusText.textContent = "✅ Added to playlist! Redirecting...";

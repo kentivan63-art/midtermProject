@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once("../config/db.php");
+require_once("../config/config.php");
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -23,7 +24,7 @@ if (!$email) {
 }
 
 // Check if email exists
-$stmt = $conn->prepare("SELECT id FROM users WHERE email=?");
+$stmt = $conn->prepare("SELECT userID FROM users WHERE email=?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -47,26 +48,28 @@ $update->execute();
 $mail = new PHPMailer(true);
 
 try {
-    $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';
-    $mail->SMTPAuth = true;
-
-    // ⚠️ Replace these with your Gmail + App Password
-    $mail->Username = 'alixsupangan2122324@gmail.com';
-    $mail->Password = 'unlvjtubynjaffkr';
+    $mailConfig = getMailConfig();
     
+    $mail->isSMTP();
+    $mail->Host = $mailConfig['host'];
+    $mail->SMTPAuth = true;
+    $mail->Username = $mailConfig['username'];
+    $mail->Password = $mailConfig['password'];
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-    $mail->Port = 465;
+    $mail->Port = $mailConfig['port'];
 
-    $mail->SMTPOptions = [
-        'ssl' => [
-            'verify_peer' => false,
-            'verify_peer_name' => false,
-            'allow_self_signed' => true,
-        ],
-    ];
+    // Only disable SSL verification in development
+    if (isDevelopment()) {
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true,
+            ],
+        ];
+    }
 
-    $mail->setFrom($mail->Username, 'Groovify');
+    $mail->setFrom($mailConfig['username'], $mailConfig['from_name']);
     $mail->addAddress($email);
 
     $mail->isHTML(true);
@@ -82,14 +85,15 @@ try {
     $mail->send();
 
     // Save the email in session so reset_password.php knows which account
-$_SESSION['reset_email'] = $email;
+    $_SESSION['reset_email'] = $email;
 
-// Redirect user to reset_password.php
-header("Location: reset_password.php");
-exit;
+    // Redirect user to reset_password.php
+    header("Location: reset_password.php");
+    exit;
 
 } catch (Exception $e) {
-    $_SESSION['forgot_error'] = "Could not send email. Please check your Gmail App Password or try again.";
+    error_log("Email sending failed: " . $e->getMessage());
+    $_SESSION['forgot_error'] = "Could not send email. Please check your email configuration or try again.";
     header("Location: forgot_password.php");
     exit;
 }

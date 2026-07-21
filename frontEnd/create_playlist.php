@@ -1,28 +1,13 @@
 <?php
-session_start();
-// Session timeout handling
-$timeout = 300; // 5 minutes
-if (isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > $timeout) {
-        session_unset();
-        session_destroy();
-        header("Location: login.php?error=timeout");
-        exit;
-    }
-}
-$_SESSION['last_activity'] = time();
+require_once("../config/session.php");
+requireLogin();
 
 require_once("../config/db.php");
-
-if (!isset($_SESSION["userID"])) {
-    header("Location: login.php");
-    exit;
-}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $playlistName = trim($_POST["playlist_name"] ?? "");
-    $userID = $_SESSION["userID"];
+    $userID = getCurrentUserID();
 
     // Input validation
     if (empty($playlistName)) {

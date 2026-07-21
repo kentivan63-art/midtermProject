@@ -1,14 +1,10 @@
 <?php
-session_start();
-
-if (!isset($_SESSION["userID"])) {
-    header("Location: login.php");
-    exit;
-}
+require_once("../config/session.php");
+requireLogin();
 
 require_once("../config/db.php");
 
-$userID = $_SESSION["userID"];
+$userID = getCurrentUserID();
 
 $stmt = $conn->prepare("
     SELECT s.title, s.artist, lh.timestamp

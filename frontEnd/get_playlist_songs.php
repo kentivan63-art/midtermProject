@@ -1,22 +1,5 @@
 <?php
-session_start();
-
-// Session timeout handling
-$timeout = 300; // 5 minutes
-if (isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > $timeout) {
-        session_unset();
-        session_destroy();
-        header("Content-Type: application/json");
-        echo json_encode([
-            "success" => false,
-            "error" => "Session timeout"
-        ]);
-        exit;
-    }
-}
-$_SESSION['last_activity'] = time();
-
+require_once __DIR__ . "/../config/session.php";
 require_once __DIR__ . "/../config/db.php";
 
 header("Content-Type: application/json");
@@ -26,7 +9,7 @@ error_log("get_playlist_songs.php called");
 error_log("REQUEST_METHOD: " . $_SERVER["REQUEST_METHOD"]);
 error_log("GET data: " . print_r($_GET, true));
 
-if (!isset($_SESSION["userID"])) {
+if (!getCurrentUserID()) {
     echo json_encode([
         "success" => false,
         "error" => "User not logged in"
@@ -35,7 +18,7 @@ if (!isset($_SESSION["userID"])) {
 }
 
 $playlistID = $_GET["playlist_id"] ?? 0;
-$userID = $_SESSION["userID"];
+$userID = getCurrentUserID();
 
 // Input validation - ensure playlistID is a valid integer
 if (!filter_var($playlistID, FILTER_VALIDATE_INT)) {

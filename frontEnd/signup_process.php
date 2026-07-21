@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once("../config/db.php");
+require_once("../config/session.php");
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $fullname = trim($_POST["fullname"] ?? "");
@@ -31,9 +32,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt = $conn->prepare("INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)");
     $stmt->bind_param("sss", $fullname, $email, $hashed);
     if ($stmt->execute()) {
-        $_SESSION["userID"] = $stmt->insert_id;
-        $_SESSION["email"] = $email;
-        $_SESSION["fullname"] = $fullname;
+        // Use centralized session management
+        setLoginSession($stmt->insert_id, $fullname, $email);
         header("Location: dashboard.php");
         exit;
     } else {

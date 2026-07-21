@@ -1,21 +1,5 @@
 <?php
-session_start();
-// Session timeout handling
-$timeout = 300; // 5 minutes
-if (isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > $timeout) {
-        session_unset();
-        session_destroy();
-        header("Content-Type: application/json");
-        echo json_encode([
-            "success" => false,
-            "error" => "Session timeout"
-        ]);
-        exit;
-    }
-}
-$_SESSION['last_activity'] = time();
-
+require_once("../config/session.php");
 require_once("../config/db.php");
 
 header("Content-Type: application/json");
@@ -26,7 +10,7 @@ error_log("REQUEST_METHOD: " . $_SERVER["REQUEST_METHOD"]);
 error_log("SESSION data: " . print_r($_SESSION, true));
 error_log("POST data: " . print_r($_POST, true));
 
-if (!isset($_SESSION["userID"])) {
+if (!getCurrentUserID()) {
     echo json_encode([
         "success" => false,
         "error" => "User not logged in"
@@ -42,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
-$userID = $_SESSION["userID"];
+$userID = getCurrentUserID();
 $playlistID = $_POST["playlistID"] ?? null;
 $songID = $_POST["songID"] ?? null;
 

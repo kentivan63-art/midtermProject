@@ -1,0 +1,19 @@
+# Basic Security Configuration for XAMPP
+
+# Disable directory browsing
+Options -Indexes
+
+# Prevent access to sensitive files
+<FilesMatch "\.(env|log|sql|md|txt)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent access to PHPMailer files
+<FilesMatch "^PHPMailer/">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Set default character encoding
+AddDefaultCharset UTF-8

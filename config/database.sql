@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
     fullname VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
+    reset_token VARCHAR(255) DEFAULT NULL,
+    token_expiry DATETIME DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (userID),
     UNIQUE KEY unique_email (email)

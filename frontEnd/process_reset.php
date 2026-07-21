@@ -1,36 +1,43 @@
 <?php
-include("../config/db.php");
+require_once("../config/db.php");
 
 $message = "";
 $color = "red";
 
-$token = $_POST['token'];
-$password = $_POST['password'];
+// Input validation
+$token = trim($_POST['token'] ?? '');
+$password = $_POST['password'] ?? '';
 
-$stmt = $conn->prepare("SELECT id, token_expiry FROM users WHERE reset_token=?");
-$stmt->bind_param("s", $token);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows == 0) {
-    $message = "Invalid code.";
+if (empty($token) || empty($password)) {
+    $message = "Please provide both token and password.";
+} elseif (strlen($password) < 6) {
+    $message = "Password must be at least 6 characters.";
 } else {
-    $user = $result->fetch_assoc();
+    $stmt = $conn->prepare("SELECT userID, token_expiry FROM users WHERE reset_token=?");
+    $stmt->bind_param("s", $token);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-    // CHECK EXPIRY
-    if (strtotime($user['token_expiry']) < time()) {
-        $message = "Code expired.";
+    if ($result->num_rows == 0) {
+        $message = "Invalid code.";
     } else {
+        $user = $result->fetch_assoc();
 
-        // UPDATE PASSWORD
-        $newPass = password_hash($password, PASSWORD_DEFAULT);
+        // CHECK EXPIRY
+        if (strtotime($user['token_expiry']) < time()) {
+            $message = "Code expired.";
+        } else {
 
-        $update = $conn->prepare("UPDATE users SET password=?, reset_token=NULL, token_expiry=NULL WHERE id=?");
-        $update->bind_param("si", $newPass, $user['id']);
-        $update->execute();
+            // UPDATE PASSWORD
+            $newPass = password_hash($password, PASSWORD_DEFAULT);
 
-        $message = "Password updated successfully!";
-        $color = "green";
+            $update = $conn->prepare("UPDATE users SET password=?, reset_token=NULL, token_expiry=NULL WHERE userID=?");
+            $update->bind_param("si", $newPass, $user['userID']);
+            $update->execute();
+
+            $message = "Password updated successfully!";
+            $color = "green";
+        }
     }
 }
 ?>

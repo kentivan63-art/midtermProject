@@ -42,43 +42,6 @@
     </ul>
 </div>
 </div>
-
-    <?php
-    error_reporting(E_ALL);
-    ini_set('display_errors', 0);
-
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "midtermProject";
-
-    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-
-    try {
-        $conn = new mysqli($servername, $username, $password, $dbname);
-        $conn->set_charset("utf8mb4");
-
-        if (isset($_POST['user_name']) && !empty(trim($_POST['user_name']))) {
-            $user = trim($_POST['user_name']);
-
-            $stmt = $conn->prepare("INSERT INTO users (username) VALUES (?)");
-            $stmt->bind_param("s", $user);
-
-            if ($stmt->execute()) {
-                echo "<p style='color:blue;'>Saved: " . htmlspecialchars($user) . "</p>";
-            } else {
-                echo "<p style='color:red;'>Error saving user.</p>";
-            }
-
-            $stmt->close();
-        }
-
-        $conn->close();
-
-    } catch (mysqli_sql_exception $e) {
-        exit;
-    }
-    ?>
 </body>
 
 </html>

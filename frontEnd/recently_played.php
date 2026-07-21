@@ -1,15 +1,13 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+require_once("../config/session.php");
+
+if (!getCurrentUserID()) {
+    return;
 }
 
 require_once("../config/db.php");
 
-if (!isset($_SESSION["userID"])) {
-    return;
-}
-
-$userID = $_SESSION["userID"];
+$userID = getCurrentUserID();
 
 $sql = "
 SELECT songs.title, songs.artist

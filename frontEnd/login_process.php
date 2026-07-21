@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once("../config/db.php");
+require_once("../config/session.php");
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -22,8 +23,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $user = $result->fetch_assoc();
 
         if (password_verify($password, $user["password"])) {
-            $_SESSION["userID"] = $user["userID"];
-            $_SESSION["fullname"] = $user["fullname"]; // matches your DB column
+            // Use centralized session management
+            setLoginSession($user["userID"], $user["fullname"], $email);
 
             header("Location: dashboard.php?login=success");
             exit;

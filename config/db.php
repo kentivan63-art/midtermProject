@@ -1,14 +1,18 @@
 <?php
+/**
+ * Database Connection
+ * Uses centralized configuration
+ */
 
-$servername = "127.0.0.1";   // better than localhost in Windows
-$username   = "root";
-$password   = "";
-$dbname     = "midtermProject";
+require_once __DIR__ . '/config.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = getDbConnection();
 
-if ($conn->connect_error) {
-    exit("Database connection failed.");
+if ($conn === null) {
+    if (isDevelopment()) {
+        exit("Database connection failed. Check your .env configuration.");
+    } else {
+        exit("Database connection failed.");
+    }
 }
-
 ?>

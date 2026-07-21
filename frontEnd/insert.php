@@ -1,10 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "midtermProject";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+require_once("../config/db.php");
 
 // CHECK IF CONNECTION WAS SUCCESSFUL
 if ($conn->connect_error) {
@@ -13,20 +8,27 @@ if ($conn->connect_error) {
 
 // CHECK IF THE FORM WAS SUBMITTED
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user = $_POST['user_name']; // MATCHES THE NAME ATTRIBUTE IN YOUR FORM INPUT
+    $user = trim($_POST['user_name'] ?? ''); // MATCHES THE NAME ATTRIBUTE IN YOUR FORM INPUT
+
+    if (empty($user)) {
+        die("Username is required.");
+    }
 
     // WE WILL USE A FIXED EMAIL FOR DEMONSTRATION PURPOSES, AS THE FORM ONLY HAS A USERNAME FIELD
     $email = "user@example.com"; 
 
-    // PREPARE THE SQL COMMAND
-    $sql = "INSERT INTO users (username, email) VALUES ('$user', '$email')";
+    // USE PREPARED STATEMENT TO PREVENT SQL INJECTION
+    $stmt = $conn->prepare("INSERT INTO users (username, email) VALUES (?, ?)");
+    $stmt->bind_param("ss", $user, $email);
 
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt->execute()) {
         echo "Successfully saved to database! <br>";
         echo "<a href='index.php'>Return to Home</a>";
     } else {
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        echo "Error: " . $stmt->error;
     }
+
+    $stmt->close();
 }
 
 $conn->close();

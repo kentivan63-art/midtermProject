@@ -1,47 +1,34 @@
 <?php
-session_start();
-// Session timeout handling
-$timeout = 300; // 5 minutes
-if (isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > $timeout) {
-        session_unset();
-        session_destroy();
-        header("Location: login.php?error=timeout");
-        exit;
-    }
-}
-$_SESSION['last_activity'] = time();
+require_once("../config/session.php");
+requireLogin();
 
 require_once("../config/db.php");
 
-if (!isset($_SESSION["userID"])) {
-    header("Location: login.php");
-    exit;
-}
-
-$userID = $_SESSION["user_id"];
+$userID = getCurrentUserID();
 $playlistID = (int)($_GET['id'] ?? 0);
 
-if (!$playlist_id) {
+if (!$playlistID) {
     die("No playlist selected");
 }
 
 /* GET PLAYLIST NAME */
-$stmt = $conn->prepare("SELECT name FROM playlists WHERE playlistID = ?");
-$stmt->bind_param("i", $playlist_id);
+$stmt = $conn->prepare("SELECT name FROM playlists WHERE playlistID = ? AND userID = ?");
+$stmt->bind_param("ii", $playlistID, $userID);
 $stmt->execute();
 $playlist = $stmt->get_result()->fetch_assoc();
 
-/* GET SONGS */
-$sql = "
-SELECT songs.songID, songs.title, songs.artist, songs.file_path
-FROM playlist_songs
-JOIN songs ON playlist_songs.songID = songs.songID
-WHERE playlist_songs.playlistID = ?
-";
+if (!$playlist) {
+    die("Playlist not found or access denied");
+}
 
-// GET SONGS
-$stmt = $conn->prepare("SELECT * FROM playlist_songs WHERE playlistID=? ORDER BY created_at ASC");
+/* GET SONGS */
+$stmt = $conn->prepare("
+    SELECT songs.songID, songs.title, songs.artist, songs.file_path
+    FROM playlist_songs
+    JOIN songs ON playlist_songs.songID = songs.songID
+    WHERE playlist_songs.playlistID = ?
+    ORDER BY playlist_songs.added_at ASC
+");
 $stmt->bind_param("i", $playlistID);
 $stmt->execute();
 $songs = $stmt->get_result();
@@ -51,13 +38,6 @@ $songsArray = [];
 while($song = $songs->fetch_assoc()){
     $songsArray[] = $song;
 }
-?>
-
-$songs = [];
-while($row = $result->fetch_assoc()){
-    $songs[] = $row;
-}
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -75,33 +55,6 @@ while($row = $result->fetch_assoc()){
 .playdot { cursor:pointer; }
 </style>
 </head>
-<body>
-
-<script>
-const playlistSongs = <?= json_encode($songsArray); ?>;
-
-function playSong(songID, title, artist, filePath) {
-    // Record listening history
-    fetch("track_listen.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `songID=${songID}`,
-        credentials: 'same-origin'
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            console.log("Listening history recorded:", data);
-            // Play the song (you can add audio player logic here)
-            alert(`Now playing: ${title} by ${artist}`);
-        } else {
-            console.error("Failed to record listening history:", data.error);
-        }
-    })
-    .catch(err => console.error("Error recording listening history:", err));
-}
-</script>
-
 <body>
 
 <div class="app">
@@ -141,13 +94,26 @@ function playSong(songID, title, artist, filePath) {
             <?php $count = 1; ?>
             <?php foreach($songsArray as $song): ?>
 
-                <div class="playlist-row" style="cursor: pointer;" onclick="playSong(<?php echo $song['songID']; ?>, '<?php echo htmlspecialchars($song['title'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($song['artist'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($song['file_path'], ENT_QUOTES); ?>')">
+                <div class="playlist-row row item" 
+                     style="cursor: pointer;" 
+                     data-index="<?php echo $count - 1; ?>"
+                     data-title="<?php echo htmlspecialchars($song['title'], ENT_QUOTES); ?>"
+                     data-artist="<?php echo htmlspecialchars($song['artist'], ENT_QUOTES); ?>"
+                     data-file="<?php echo htmlspecialchars($song['file_path'], ENT_QUOTES); ?>"
+                     data-songid="<?php echo $song['songID']; ?>">
                     <div class="col-num"><?php echo $count++; ?></div>
                     <div class="col-title"><?php echo htmlspecialchars($song['title']); ?></div>
                     <div class="col-artist"><?php echo htmlspecialchars($song['artist']); ?></div>
+                    <div class="col-action"><span class="playdot">▶</span></div>
                 </div>
 
             <?php endforeach; ?>
+            
+            <?php else: ?>
+                <div style="padding:16px; color:rgba(255,255,255,.65);">
+                    No songs in this playlist yet.
+                </div>
+            <?php endif; ?>
 
     <!-- FOOTER PLAYER -->
     <footer class="player">
@@ -179,6 +145,8 @@ function playSong(songID, title, artist, filePath) {
 </div>
 
 <script>
+console.log("=== PLAYLIST.PHP SCRIPT LOADED ===");
+
 const rows = document.querySelectorAll(".row.item");
 const player = document.getElementById("audioPlayer");
 const npTitle = document.getElementById("npTitle");
@@ -190,11 +158,21 @@ const seekBar = document.getElementById("seekBar");
 const seekFill = document.getElementById("seekFill");
 const vol = document.getElementById("vol");
 
+console.log("Elements found:", {
+    rows: rows.length,
+    player: !!player,
+    npTitle: !!npTitle,
+    btnPlayPause: !!btnPlayPause
+});
+
 let playlist = Array.from(rows).map(r=>({
     title: r.dataset.title,
     artist: r.dataset.artist,
-    file_path: r.dataset.file
+    file_path: r.dataset.file,
+    songID: r.dataset.songid
 }));
+
+console.log("Playlist loaded:", playlist);
 let currentIndex = -1;
 let currentRow = null;
 
@@ -204,42 +182,101 @@ function updateRowIcons(){
     btnPlayPause.textContent = player.paused?"⏯":"⏸";
 }
 function playAtIndex(i){
-    if(!playlist.length) return;
+    console.log("=== playAtIndex CALLED ===");
+    console.log("Index:", i);
+    console.log("Playlist length:", playlist.length);
+    
+    if(!playlist.length) {
+        console.log("❌ Playlist is empty, cannot play");
+        return;
+    }
+    if(i < 0 || i >= playlist.length) {
+        console.log("❌ Invalid index:", i);
+        return;
+    }
+    
     currentIndex=i;
     const track = playlist[i];
+    console.log("Playing track:", track);
+    console.log("File path:", track.file_path);
+    
     player.src = track.file_path;
-    player.play().catch(()=>{});
+    console.log("Player src set to:", player.src);
+    
+    player.play().then(() => {
+        console.log("✅ Audio playing successfully");
+    }).catch(error => {
+        console.error("❌ Audio play error:", error);
+        console.error("Error details:", {
+            name: error.name,
+            message: error.message
+        });
+    });
+    
     npTitle.textContent=track.title;
     npArtist.textContent=track.artist;
+    
+    // Record listening history
+    recordListeningHistory(track.songID);
+    
     if(currentRow) currentRow.classList.remove("playing");
-    currentRow=rows[i]; currentRow.classList.add("playing");
+    currentRow=rows[i]; 
+    if(currentRow) currentRow.classList.add("playing");
     updateRowIcons();
 }
+
+function recordListeningHistory(songID) {
+    fetch("track_listen.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `songID=${songID}`,
+        credentials: 'same-origin'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Listening history recorded:", data);
+        } else {
+            console.error("Failed to record listening history:", data.error);
+        }
+    })
+    .catch(err => console.error("Error recording listening history:", err));
+}
+
 rows.forEach((r,i)=>{
     r.addEventListener("click",()=>playAtIndex(i));
-    r.querySelector(".playdot").addEventListener("click",e=>{ e.stopPropagation(); playAtIndex(i); });
+    const playdot = r.querySelector(".playdot");
+    if(playdot) {
+        playdot.addEventListener("click",e=>{ e.stopPropagation(); playAtIndex(i); });
+    }
 });
 
-btnPlayPause.addEventListener("click",()=>{
-    if(!player.src && playlist.length) playAtIndex(0);
-    else if(player.paused) player.play();
-    else player.pause();
-});
+if(btnPlayPause) {
+    btnPlayPause.addEventListener("click",()=>{
+        if(!player.src && playlist.length) playAtIndex(0);
+        else if(player.paused) player.play();
+        else player.pause();
+    });
+}
 
 player.addEventListener("play",updateRowIcons);
 player.addEventListener("pause",updateRowIcons);
 player.addEventListener("ended",()=>playAtIndex(currentIndex+1));
-vol.addEventListener("input",()=>player.volume=vol.value);
+if(vol) {
+    vol.addEventListener("input",()=>player.volume=vol.value);
+}
 player.addEventListener("timeupdate",()=>{
-    curTime.textContent=fmtTime(player.currentTime);
-    durTime.textContent=fmtTime(player.duration);
-    seekFill.style.width=((player.currentTime/player.duration)*100||0)+"%";
+    if(curTime) curTime.textContent=fmtTime(player.currentTime);
+    if(durTime) durTime.textContent=fmtTime(player.duration);
+    if(seekFill) seekFill.style.width=((player.currentTime/player.duration)*100||0)+"%";
 });
-seekBar.addEventListener("click",(e)=>{
-    const rect=seekBar.getBoundingClientRect();
-    const pct=(e.clientX-rect.left)/rect.width;
-    player.currentTime=pct*player.duration;
-});
+if(seekBar) {
+    seekBar.addEventListener("click",(e)=>{
+        const rect=seekBar.getBoundingClientRect();
+        const pct=(e.clientX-rect.left)/rect.width;
+        player.currentTime=pct*player.duration;
+    });
+}
 </script>
 
 </body>

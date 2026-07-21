@@ -1,13 +1,7 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
 
-// ✅ Database connection (since you don't have db.php)
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "midtermProject"; // make sure this matches your database name
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+require_once("../config/db.php");
 
 // create the songs table if it doesn't exist yet
 $conn->query("CREATE TABLE IF NOT EXISTS songs (

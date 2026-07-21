@@ -1,21 +1,5 @@
 <?php
-session_start();
-
-// Session timeout handling (same as dashboard.php)
-$timeout = 300; // 5 minutes
-if (isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > $timeout) {
-        session_unset();
-        session_destroy();
-        echo json_encode([
-            "success" => false,
-            "error" => "Session timeout"
-        ]);
-        exit;
-    }
-}
-$_SESSION['last_activity'] = time();
-
+require_once("../config/session.php");
 require_once("../config/db.php");
 
 header("Content-Type: application/json");
@@ -34,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
-if (!isset($_SESSION["userID"])) {
+if (!getCurrentUserID()) {
     echo json_encode([
         "success" => false,
         "error" => "User not logged in"
@@ -43,7 +27,7 @@ if (!isset($_SESSION["userID"])) {
 }
 
 $songID = $_POST["songID"] ?? null;
-$userID = $_SESSION["userID"];
+$userID = getCurrentUserID();
 
 error_log("userID from session: " . $userID);
 error_log("songID received: " . $songID);

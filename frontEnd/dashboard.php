@@ -1,32 +1,13 @@
 <?php
-session_start();
-
-// ✅ Session Timeout
-$timeout = 300; // 5 minutes
-
-if (isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > $timeout) {
-        session_unset();
-        session_destroy();
-        header("Location: login.php?error=timeout");
-        exit;
-    }
-}
-
-/* ✅ UPDATE LAST ACTIVITY */
-$_SESSION['last_activity'] = time();
-
-/* ✅ SESSION CHECK */
-if (!isset($_SESSION["userID"])) {
-    header("Location: login.php");
-    exit;
-}
+require_once("../config/session.php");
+requireLogin();
 
 require_once("../config/db.php");
 
 /* ✅ GET USER PLAYLISTS */
+$userID = getCurrentUserID();
 $stmt = $conn->prepare("SELECT playlistID, name FROM playlists WHERE userID = ?");
-$stmt->bind_param("i", $_SESSION["userID"]);
+$stmt->bind_param("i", $userID);
 $stmt->execute();
 $playlistResult = $stmt->get_result();
 

@@ -4,6 +4,13 @@ console.log("=== DASHBOARD.JS LOADED ===");
 console.log("PLAYLISTS:", USER_PLAYLISTS);
 console.log("Current page:", window.location.href);
 
+// Close dropdowns when clicking outside
+document.addEventListener("click", () => {
+  document.querySelectorAll(".menu-dropdown").forEach(dropdown => {
+    dropdown.style.display = "none";
+  });
+});
+
 const qInput = document.getElementById("jamendoQuery");
 const btn = document.getElementById("jamendoBtn");
 const results = document.getElementById("jamendoResults");
@@ -102,17 +109,19 @@ function renderSongs(list) {
 
       <div class="col-menu">
         <div class="menu-wrapper">
-          <button class="menu-btn">⋮</button>
+          <button class="menu-btn" title="Add to playlist">➕</button>
           <div class="menu-dropdown">
-            <div class="menu-item add-playlist-btn">➕ Add to Playlist</div>
-            <div class="submenu">
+            <div class="menu-header">Add to Playlist:</div>
+            <div class="playlist-list">
               ${USER_PLAYLISTS.map(pl => `
-                <div class="submenu-item"
+                <div class="playlist-item"
                      data-song="${track.songID}"
-                     data-playlist="${pl.playlistID}">
+                     data-playlist="${pl.playlistID}"
+                     title="Add to ${pl.name}">
                   ${pl.name}
                 </div>
               `).join('')}
+              ${USER_PLAYLISTS.length === 0 ? '<div class="no-playlists">No playlists available</div>' : ''}
             </div>
           </div>
         </div>
@@ -154,8 +163,6 @@ function renderSongs(list) {
     // Menu toggle
     const menuBtn = row.querySelector(".menu-btn");
     const dropdown = row.querySelector(".menu-dropdown");
-    const addBtn = row.querySelector(".add-playlist-btn");
-    const submenu = row.querySelector(".submenu");
 
     menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -165,20 +172,26 @@ function renderSongs(list) {
       dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
     });
 
-    // Toggle submenu
-    addBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      submenu.style.display = submenu.style.display === "block" ? "none" : "block";
-    });
-
     // Add to playlist action
-    row.querySelectorAll(".submenu-item").forEach(item => {
+    row.querySelectorAll(".playlist-item").forEach(item => {
+      item.addEventListener("mouseenter", () => {
+        // Optional: Add visual feedback on hover
+        item.style.background = "rgba(29,185,84,.1)";
+        item.style.color = "var(--green)";
+      });
+
+      item.addEventListener("mouseleave", () => {
+        // Remove visual feedback when not hovering
+        item.style.background = "";
+        item.style.color = "";
+      });
+
       item.addEventListener("click", async (e) => {
         e.stopPropagation();
 
         const songId = item.dataset.song;
         const playlistId = item.dataset.playlist;
-        const trackData = playlist.find(t => t.id == songId);
+        const trackData = playlist.find(t => t.songID == songId);
 
         await fetch("add_to_playlist.php", {
           method: "POST",

@@ -62,6 +62,10 @@ while($song = $songs->fetch_assoc()){
         <nav class="nav">
             <a class="nav-item" href="dashboard.php">Home</a>
             <a class="nav-item active" href="library.php">Library</a>
+            <a class="nav-item" href="updates.php">Update Version</a>
+            <?php if (isAdmin()): ?>
+            <a class="nav-item" href="admin_updates.php">Admin</a>
+            <?php endif; ?>
             <a class="nav-item" href="logout_process.php">Log out</a>
         </nav>
         <div class="spacer"></div>

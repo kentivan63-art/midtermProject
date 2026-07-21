@@ -216,6 +216,88 @@ body {
   margin: 2px 0 12px;
 }
 
+/* ================= What's New Section ================= */
+
+.whats-new-section {
+  margin-bottom: 20px;
+}
+
+.whats-new-content {
+  padding: 14px;
+}
+
+.update-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.05);
+  margin-bottom: 10px;
+  transition: background var(--ease), border-color var(--ease);
+}
+
+.update-item:last-child {
+  margin-bottom: 0;
+}
+
+.update-item:hover {
+  background: rgba(255,255,255,.05);
+  border-color: rgba(255,255,255,.1);
+}
+
+.update-badge {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  height: fit-content;
+}
+
+.update-badge.new {
+  background: rgba(29,185,84,.2);
+  color: var(--green);
+  border: 1px solid rgba(29,185,84,.3);
+}
+
+.update-badge.update {
+  background: rgba(59,130,246,.2);
+  color: #3b82f6;
+  border: 1px solid rgba(59,130,246,.3);
+}
+
+.update-badge.feature {
+  background: rgba(168,85,247,.2);
+  color: #a855f7;
+  border: 1px solid rgba(168,85,247,.3);
+}
+
+.update-text {
+  flex: 1;
+}
+
+.update-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.update-description {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.update-date {
+  font-size: 11px;
+  color: var(--muted2);
+}
+
 /* ================= Song List ================= */
 
 .panel {
@@ -227,7 +309,7 @@ body {
 
 .row {
   display: grid;
-  grid-template-columns: 36px 9fr 5fr 60px 36px;
+  grid-template-columns: 36px 9fr 5fr 60px 50px;
   gap: var(--gap-md);
   align-items: center;
   padding: 8px 14px;
@@ -296,6 +378,91 @@ body {
 @keyframes pulse {
   0%,100% { opacity: .4; transform: scale(.8); }
   50%      { opacity: 1;  transform: scale(1.2); }
+}
+
+/* ================= Playlist Menu ================= */
+
+.menu-wrapper {
+  position: relative;
+}
+
+.menu-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--ease), border-color var(--ease);
+}
+
+.menu-btn:hover {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.25);
+}
+
+.menu-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 8px;
+  width: 200px;
+  background: var(--panel2);
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.menu-header {
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  border-bottom: 1px solid var(--stroke);
+  background: rgba(255,255,255,.02);
+}
+
+.playlist-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.playlist-item {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--ease), color var(--ease);
+  border-bottom: 1px solid rgba(255,255,255,.03);
+  position: relative;
+}
+
+.playlist-item:last-child {
+  border-bottom: none;
+}
+
+.playlist-item:hover {
+  background: rgba(29,185,84,.1);
+  color: var(--green);
+}
+
+.playlist-item:active {
+  background: rgba(29,185,84,.2);
+}
+
+.no-playlists {
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--muted2);
+  text-align: center;
 }
 
 /* ================= Player ================= */

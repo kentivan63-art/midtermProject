@@ -62,7 +62,7 @@ $result = $stmt->get_result();
     <link rel="stylesheet" href="../assets/library.css?v=3">
     <link rel="icon" type="image/x-icon" href="../groovifylogo.ico">
 
-    <!-- ✅ ADDED STYLE ONLY -->
+    <!--  ADDED STYLE ONLY -->
     <style>
         .playlist-link {
             text-decoration: none; /* remove underline */
@@ -90,6 +90,10 @@ $result = $stmt->get_result();
         <nav class="nav">
             <a class="nav-item" href="dashboard.php">Home</a>
             <a class="nav-item active" href="library.php">Library</a>
+            <a class="nav-item" href="updates.php">Update Version</a>
+            <?php if (isAdmin()): ?>
+            <a class="nav-item" href="admin_updates.php">Admin</a>
+            <?php endif; ?>
             <a class="nav-item" href="logout_process.php">Log out</a>
         </nav>
 

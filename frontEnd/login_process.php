@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Updated: use 'userID' and 'fullname' to match your DB
-    $stmt = $conn->prepare("SELECT userID, fullname, password FROM users WHERE email = ?");
+    $stmt = $conn->prepare("SELECT userID, fullname, password, isAdmin FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -23,8 +23,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $user = $result->fetch_assoc();
 
         if (password_verify($password, $user["password"])) {
+            // Check if user is admin (handle missing column gracefully)
+            $isAdmin = false;
+            
+            // First, try to use database isAdmin column if it exists
+            if (isset($user["isAdmin"]) && $user["isAdmin"] == 1) {
+                $isAdmin = true;
+            }
+            // Fallback: make first user admin or specific email admin for demo
+            elseif ($email === "admin@groovify.com" || $user["userID"] === 1) {
+                $isAdmin = true;
+            }
+            
             // Use centralized session management
-            setLoginSession($user["userID"], $user["fullname"], $email);
+            setLoginSession($user["userID"], $user["fullname"], $email, $isAdmin);
 
             header("Location: dashboard.php?login=success");
             exit;

@@ -51,12 +51,27 @@ function regenerateSession() {
 }
 
 // Set session variables after successful login
-function setLoginSession($userID, $fullname, $email) {
+function setLoginSession($userID, $fullname, $email, $isAdmin = false) {
     $_SESSION["userID"] = $userID;
     $_SESSION["fullname"] = $fullname;
     $_SESSION["email"] = $email;
+    $_SESSION["isAdmin"] = $isAdmin;
     $_SESSION['last_activity'] = time();
     regenerateSession();
+}
+
+// Check if current user is admin
+function isAdmin() {
+    return isset($_SESSION["isAdmin"]) && $_SESSION["isAdmin"] === true;
+}
+
+// Require admin access
+function requireAdmin() {
+    requireLogin();
+    if (!isAdmin()) {
+        header("Location: dashboard.php?error=unauthorized");
+        exit;
+    }
 }
 
 // Destroy session (logout)

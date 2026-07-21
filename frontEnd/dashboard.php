@@ -4,7 +4,7 @@ requireLogin();
 
 require_once("../config/db.php");
 
-/* ✅ GET USER PLAYLISTS */
+/* GET USER PLAYLISTS */
 $userID = getCurrentUserID();
 $stmt = $conn->prepare("SELECT playlistID, name FROM playlists WHERE userID = ?");
 $stmt->bind_param("i", $userID);
@@ -47,6 +47,10 @@ while($pl = $playlistResult->fetch_assoc()){
     <nav class="nav">
       <a class="nav-item active" href="dashboard.php">Home</a>
       <a class="nav-item" href="library.php">Library</a>
+      <a class="nav-item" href="updates.php">Update Version</a>
+      <?php if (isAdmin()): ?>
+      <a class="nav-item" href="admin_updates.php">Admin</a>
+      <?php endif; ?>
       <a class="nav-item" href="logout_process.php">Log out</a>
     </nav>
 

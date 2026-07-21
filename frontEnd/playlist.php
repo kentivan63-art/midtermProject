@@ -48,12 +48,6 @@ while($song = $songs->fetch_assoc()){
 <link rel="stylesheet" href="../assets/dashboard.css?v=3">
 <link rel="stylesheet" href="../assets/library.css?v=3">
 <link rel="icon" type="image/x-icon" href="../groovifylogo.ico">
-<style>
-/* Keep small overrides for playlist */
-.row.item { cursor:pointer; }
-.row.item.playing { background: rgba(29,185,84,0.1); }
-.playdot { cursor:pointer; }
-</style>
 </head>
 <body>
 
@@ -79,17 +73,7 @@ while($song = $songs->fetch_assoc()){
             <h2 style="font-size:22px;font-weight:800;"><?php echo htmlspecialchars($playlist['name']); ?></h2>
         </header>
 
-        <!-- SONG LIST -->
-        <?php if (count($songsArray) > 0): ?>
-
-        <div class="playlist-container">
-
-            <!-- HEADER -->
-            <div class="playlist-header">
-                <div>#</div>
-                <div>Title</div>
-                <div>Artist</div>
-            </div>
+        <div class="hint" id="statusText"><?php echo count($songsArray); ?> track(s)</div>
 
             <?php $count = 1; ?>
             <?php foreach($songsArray as $song): ?>
@@ -157,6 +141,7 @@ const durTime = document.getElementById("durTime");
 const seekBar = document.getElementById("seekBar");
 const seekFill = document.getElementById("seekFill");
 const vol = document.getElementById("vol");
+const statusText = document.getElementById("statusText");
 
 console.log("Elements found:", {
     rows: rows.length,
@@ -177,10 +162,30 @@ let currentIndex = -1;
 let currentRow = null;
 
 function fmtTime(s){ if(!isFinite(s)) return "0:00"; const m=Math.floor(s/60); const r=Math.floor(s%60); return `${m}:${String(r).padStart(2,"0")}`; }
+
 function updateRowIcons(){
     rows.forEach((r,i)=>r.querySelector(".playdot").textContent = i===currentIndex&&!player.paused?"⏸":"▶");
     btnPlayPause.textContent = player.paused?"⏯":"⏸";
 }
+
+function recordListeningHistory(songId) {
+    fetch("track_listen.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `songID=${songId}`,
+        credentials: 'same-origin'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log("Listening history recorded:", data);
+        } else {
+            console.error("Failed to record listening history:", data.error);
+        }
+    })
+    .catch(err => console.error("Error recording listening history:", err));
+}
+
 function playAtIndex(i){
     console.log("=== playAtIndex CALLED ===");
     console.log("Index:", i);
@@ -223,6 +228,7 @@ function playAtIndex(i){
     currentRow=rows[i]; 
     if(currentRow) currentRow.classList.add("playing");
     updateRowIcons();
+    statusText.textContent = "Now playing: " + track.title;
 }
 
 function recordListeningHistory(songID) {
